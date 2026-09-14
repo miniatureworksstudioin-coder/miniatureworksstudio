@@ -1002,6 +1002,11 @@ function addToCart(product, sizeKey){
   toast("Added to your order");
 }
 
+// Expose to the global scope so the Supabase-powered product loader
+// (a separate <script> tag, outside this IIFE) can call it too.
+window.addToCart = addToCart;
+window.fmtINR = fmtINR;
+
 /* ---------------- shop grid enhancement ---------------- */
 
 function enhanceCustomPieceCards(){
@@ -1694,6 +1699,58 @@ if(document.readyState==="loading"){
       item.appendChild(caption);
       if (product.description) item.appendChild(description);
       item.appendChild(price);
+
+      // --- Size selection + "Add to order" (mirrors the static shop cards) ---
+      // Supabase products only have one base_price (no separate S/M/L prices
+      // yet), so all three size buttons show that same price for now.
+      var sizePrice = Number.isFinite(numericPrice) ? numericPrice : 0;
+      var cartProduct = {
+        name: product.name || 'Untitled product',
+        s: sizePrice,
+        m: sizePrice,
+        l: sizePrice,
+        img: image.src
+      };
+
+      const ctr = document.createElement('div');
+      ctr.className = 'shop-controls';
+      ctr.dataset.selected = 'S';
+
+      function sizeBtnHtml(key, sizeVal) {
+        return '<button class="size-btn' + (key === 'S' ? ' active' : '') +
+          '" data-size="' + key + '" type="button">' + key +
+          '<span>' + window.fmtINR(sizeVal) + '</span></button>';
+      }
+
+      ctr.innerHTML =
+        '<span class="made-tag">MADE TO ORDER</span>' +
+        '<div class="size-row">' +
+          sizeBtnHtml('S', cartProduct.s) +
+          sizeBtnHtml('M', cartProduct.m) +
+          sizeBtnHtml('L', cartProduct.l) +
+        '</div>' +
+        '<button class="btn-add" type="button">Add to order</button>';
+
+      ctr.querySelectorAll('.size-btn').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          ctr.querySelectorAll('.size-btn').forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          ctr.dataset.selected = btn.dataset.size;
+        });
+      });
+
+      ctr.querySelector('.btn-add').addEventListener('click', function() {
+        window.addToCart(cartProduct, ctr.dataset.selected);
+        var addBtn = ctr.querySelector('.btn-add');
+        addBtn.textContent = 'Added ✓';
+        addBtn.classList.add('added');
+        setTimeout(function() {
+          addBtn.textContent = 'Add to order';
+          addBtn.classList.remove('added');
+        }, 1200);
+      });
+
+      item.appendChild(ctr);
       grid.appendChild(item);
     });
   }
