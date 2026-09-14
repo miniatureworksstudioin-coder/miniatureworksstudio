@@ -706,7 +706,15 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
 </figure>
 
 <script>
+/* =========================================================================
+   UI: mobile menu, hero build-in, scroll reveals, counters, and the
+   lightbox gallery. openGallery() is exposed on window at the bottom so
+   the Supabase-powered product cards (added later in the page) can open
+   the same lightbox as the static pieces.
+   ========================================================================= */
 (function(){
+  "use strict";
+
   // Mobile menu
   var burger=document.getElementById('burger'),menu=document.getElementById('menu');
   burger.addEventListener('click',function(){
@@ -756,7 +764,12 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
   },{threshold:.5}):null;
   document.querySelectorAll('[data-count]').forEach(function(el){cio?cio.observe(el):el.textContent=el.dataset.count+(el.dataset.suffix||'');});
 
-  // Lightbox — each piece opens its own gallery (its own photos only, not the whole page's)
+  /* ---------------- Lightbox ----------------
+     Each piece opens its own gallery (its own photos only, not the whole
+     page's). Works for the static .piece figures AND for .g-item figures
+     — including ones created later by the Supabase product loader, since
+     that loader attaches its own click listener directly to each figure
+     it builds and calls window.openGallery(figure) below. */
   var figures=Array.prototype.slice.call(document.querySelectorAll('.piece figure,.g-item figure'));
   var lb=document.getElementById('lb'),lbImg=document.getElementById('lbImg'),lbCap=document.getElementById('lbCap'),
       lbDots=document.getElementById('lbDots'),lbPrev=document.getElementById('lbPrev'),lbNext=document.getElementById('lbNext');
@@ -789,7 +802,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
     renderDots();
   }
 
-    function openGallery(f){
+  function openGallery(f){
     shots=shotsFor(f);
     shotCap=f.dataset.cap||(shots[0]&&shots[0].alt)||'';
     var multi=shots.length>1;
@@ -798,7 +811,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
     showShot(0);
     lb.classList.add('open');document.body.style.overflow='hidden';
   }
-  window.openGallery = openGallery;
+
   function hide(){lb.classList.remove('open');document.body.style.overflow='';}
 
   figures.forEach(function(f){f.addEventListener('click',function(){openGallery(f);});});
@@ -825,6 +838,11 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
     badge.innerHTML='<svg viewBox="0 0 24 24"><rect height="14" rx="2" width="18" x="3" y="6"/><circle cx="12" cy="13" r="3.2"/></svg>'+n;
     f.appendChild(badge);
   });
+
+  // Expose to the global scope so the Supabase-powered product loader
+  // (a separate <script> tag, further down the page) can open the
+  // lightbox for the cards it creates dynamically.
+  window.openGallery = openGallery;
 })();
 </script>
 <script>
@@ -1630,19 +1648,158 @@ if(document.readyState==="loading"){
 <!-- Supabase Connection -->
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-  const supabaseUrl = 'https://pcgafbehazsieyvpfnch.supabase.co';
-  const supabaseKey = 'sb_publishable_gLDAHTotkdn8jYtdcLFIGg_Dewi721u';
-  
-  const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+/* =========================================================================
+   Dynamic products, loaded from Supabase.
+   Depends on two globals exposed earlier on the page:
+     - window.openGallery(figure)  — opens the lightbox for a figure
+     - window.addToCart(product, sizeKey) — adds S/M/L to the cart
+   Both are defined in the scripts above, and this file runs after them,
+   so they're guaranteed to exist by the time a card is clicked.
+   ========================================================================= */
+(function(){
+  "use strict";
 
-  async function loadProducts() {
-    const grid = document.getElementById('productsGrid');
+  var supabaseUrl = 'https://pcgafbehazsieyvpfnch.supabase.co';
+  var supabaseKey = 'sb_publishable_gLDAHTotkdn8jYtdcLFIGg_Dewi721u';
+  var supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+  var placeholderImage = 'images/miniature-works-studio-logo.webp';
+
+  function buildSizeButtonsHtml(cartProduct){
+    function sizeBtnHtml(key, sizeVal){
+      return '<button class="size-btn' + (key === 'S' ? ' active' : '') +
+        '" data-size="' + key + '" type="button">' + key +
+        '<span>' + window.fmtINR(sizeVal) + '</span></button>';
+    }
+    return sizeBtnHtml('S', cartProduct.s) + sizeBtnHtml('M', cartProduct.m) + sizeBtnHtml('L', cartProduct.l);
+  }
+
+  function buildFigure(product, index){
+    var figure = document.createElement('figure');
+    // Read by the lightbox as the caption/alt text for this product's photos.
+    figure.dataset.cap = product.name || 'Product';
+
+    var image = document.createElement('img');
+    image.alt = product.name || 'Product image';
+    image.loading = 'lazy';
+    image.src = product.main_image_url && product.main_image_url.trim()
+      ? product.main_image_url
+      : placeholderImage;
+    image.onerror = function(){ image.src = placeholderImage; };
+    figure.appendChild(image);
+
+    var tag = document.createElement('span');
+    tag.className = 'tag';
+    tag.textContent = 'No. ' + String(index + 1).padStart(2, '0');
+    figure.appendChild(tag);
+
+    // Extra gallery photos, one <img class="extra-shot"> per URL. These are
+    // hidden in the grid by CSS but read by the lightbox's shotsFor().
+    if (Array.isArray(product.gallery_images)) {
+      product.gallery_images.forEach(function(url){
+        if (url && url.trim()) {
+          var extraImg = document.createElement('img');
+          extraImg.src = url;
+          extraImg.className = 'extra-shot';
+          extraImg.loading = 'lazy';
+          extraImg.alt = product.name || 'Product image';
+          figure.appendChild(extraImg);
+        }
+      });
+    }
+
+    figure.addEventListener('click', function(){
+      window.openGallery(figure);
+    });
+
+    return { figure: figure, image: image };
+  }
+
+  function buildShopControls(cartProduct){
+    var ctr = document.createElement('div');
+    ctr.className = 'shop-controls';
+    ctr.dataset.selected = 'S';
+    ctr.innerHTML =
+      '<span class="made-tag">MADE TO ORDER</span>' +
+      '<div class="size-row">' + buildSizeButtonsHtml(cartProduct) + '</div>' +
+      '<button class="btn-add" type="button">Add to order</button>';
+
+    ctr.querySelectorAll('.size-btn').forEach(function(btn){
+      btn.addEventListener('click', function(){
+        ctr.querySelectorAll('.size-btn').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+        ctr.dataset.selected = btn.dataset.size;
+      });
+    });
+
+    ctr.querySelector('.btn-add').addEventListener('click', function(){
+      window.addToCart(cartProduct, ctr.dataset.selected);
+      var addBtn = ctr.querySelector('.btn-add');
+      addBtn.textContent = 'Added ✓';
+      addBtn.classList.add('added');
+      setTimeout(function(){
+        addBtn.textContent = 'Add to order';
+        addBtn.classList.remove('added');
+      }, 1200);
+    });
+
+    return ctr;
+  }
+
+  function buildProductCard(product, index){
+    var item = document.createElement('div');
+    item.className = 'g-item';
+
+    var built = buildFigure(product, index);
+    var figure = built.figure, image = built.image;
+
+    var caption = document.createElement('span');
+    caption.className = 'cap';
+    caption.textContent = product.name || 'Untitled product';
+
+    var numericSmall = Number(product.price_small);
+    var numericMedium = Number(product.price_medium);
+    var numericLarge = Number(product.price_large);
+
+    var price = document.createElement('span');
+    price.className = 'product-price';
+    price.textContent = Number.isFinite(numericSmall)
+      ? 'From ₹' + numericSmall.toLocaleString('en-IN')
+      : (product.price_small ? 'From ₹' + product.price_small : 'Price on request');
+
+    item.appendChild(figure);
+    item.appendChild(caption);
+
+    if (product.description) {
+      var description = document.createElement('p');
+      description.className = 'product-description';
+      description.textContent = product.description;
+      item.appendChild(description);
+    }
+
+    item.appendChild(price);
+
+    var cartProduct = {
+      name: product.name || 'Untitled product',
+      s: Number.isFinite(numericSmall) ? numericSmall : 0,
+      m: Number.isFinite(numericMedium) ? numericMedium : 0,
+      l: Number.isFinite(numericLarge) ? numericLarge : 0,
+      img: image.src
+    };
+
+    item.appendChild(buildShopControls(cartProduct));
+
+    return item;
+  }
+
+  async function loadProducts(){
+    var grid = document.getElementById('productsGrid');
     if (!grid) return;
 
-    // Added gallery_images to the select statement
-    const { data, error } = await supabaseClient
+    var result = await supabaseClient
       .from('products')
       .select('name, description, price_small, price_medium, price_large, main_image_url, gallery_images');
+
+    var data = result.data, error = result.error;
 
     if (error) {
       console.error('❌ Supabase Error:', error);
@@ -1650,133 +1807,18 @@ if(document.readyState==="loading"){
       return;
     }
 
-    console.log('✅ Products fetched from Supabase:', data);
-
     if (!data || data.length === 0) {
       grid.innerHTML = '<p class="section-intro">No products are available at the moment.</p>';
       return;
     }
 
-    const placeholderImage = 'images/miniature-works-studio-logo.webp';
-
-    data.forEach(function(product, index) {
-      const item = document.createElement('div');
-      item.className = 'g-item';
-
-      const figure = document.createElement('figure');
-      figure.dataset.cap = product.name || 'Product';
-
-      const image = document.createElement('img');
-      image.alt = product.name || 'Product image';
-      image.loading = 'lazy';
-      image.src = product.main_image_url && product.main_image_url.trim()
-        ? product.main_image_url
-        : placeholderImage;
-      image.onerror = function() { image.src = placeholderImage; };
-
-      const tag = document.createElement('span');
-      tag.className = 'tag';
-      tag.textContent = 'No. ' + String(index + 1).padStart(2, '0');
-
-      figure.appendChild(image);
-      figure.appendChild(tag);
-
-      // --- NEW: Add extra gallery images ---
-      if (product.gallery_images && Array.isArray(product.gallery_images)) {
-        product.gallery_images.forEach(function(url) {
-          if (url && url.trim()) {
-            const extraImg = document.createElement('img');
-            extraImg.src = url;
-            extraImg.className = 'extra-shot'; // Hidden by CSS, but read by the lightbox
-            extraImg.loading = 'lazy';
-            extraImg.alt = product.name || 'Product image';
-            figure.appendChild(extraImg);
-          }
-        });
-      }
-
-      // --- NEW: Attach the lightbox click listener to this dynamic figure ---
-      figure.addEventListener('click', function() {
-        if (typeof window.openGallery === 'function') {
-          window.openGallery(figure);
-        }
-      });
-
-      const caption = document.createElement('span');
-      caption.className = 'cap';
-      caption.textContent = product.name || 'Untitled product';
-
-      const description = document.createElement('p');
-      description.className = 'product-description';
-      description.textContent = product.description || '';
-
-      const numericSmall = Number(product.price_small);
-      const numericMedium = Number(product.price_medium);
-      const numericLarge = Number(product.price_large);
-
-      const price = document.createElement('span');
-      price.className = 'product-price';
-      price.textContent = Number.isFinite(numericSmall)
-        ? 'From ₹' + numericSmall.toLocaleString('en-IN')
-        : (product.price_small ? 'From ₹' + product.price_small : 'Price on request');
-
-      item.appendChild(figure);
-      item.appendChild(caption);
-      if (product.description) item.appendChild(description);
-      item.appendChild(price);
-
-      var cartProduct = {
-        name: product.name || 'Untitled product',
-        s: Number.isFinite(numericSmall) ? numericSmall : 0,
-        m: Number.isFinite(numericMedium) ? numericMedium : 0,
-        l: Number.isFinite(numericLarge) ? numericLarge : 0,
-        img: image.src
-      };
-
-      const ctr = document.createElement('div');
-      ctr.className = 'shop-controls';
-      ctr.dataset.selected = 'S';
-
-      function sizeBtnHtml(key, sizeVal) {
-        return '<button class="size-btn' + (key === 'S' ? ' active' : '') +
-          '" data-size="' + key + '" type="button">' + key +
-          '<span>' + window.fmtINR(sizeVal) + '</span></button>';
-      }
-
-      ctr.innerHTML =
-        '<span class="made-tag">MADE TO ORDER</span>' +
-        '<div class="size-row">' +
-          sizeBtnHtml('S', cartProduct.s) +
-          sizeBtnHtml('M', cartProduct.m) +
-          sizeBtnHtml('L', cartProduct.l) +
-        '</div>' +
-        '<button class="btn-add" type="button">Add to order</button>';
-
-      ctr.querySelectorAll('.size-btn').forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          ctr.querySelectorAll('.size-btn').forEach(function(b) { b.classList.remove('active'); });
-          btn.classList.add('active');
-          ctr.dataset.selected = btn.dataset.size;
-        });
-      });
-
-      ctr.querySelector('.btn-add').addEventListener('click', function() {
-        window.addToCart(cartProduct, ctr.dataset.selected);
-        var addBtn = ctr.querySelector('.btn-add');
-        addBtn.textContent = 'Added ✓';
-        addBtn.classList.add('added');
-        setTimeout(function() {
-          addBtn.textContent = 'Add to order';
-          addBtn.classList.remove('added');
-        }, 1200);
-      });
-
-      item.appendChild(ctr);
-      grid.appendChild(item);
+    data.forEach(function(product, index){
+      grid.appendChild(buildProductCard(product, index));
     });
   }
 
   loadProducts();
+})();
 </script>
 </body>
 </html>
