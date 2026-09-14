@@ -789,7 +789,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
     renderDots();
   }
 
-  function openGallery(f){
+    function openGallery(f){
     shots=shotsFor(f);
     shotCap=f.dataset.cap||(shots[0]&&shots[0].alt)||'';
     var multi=shots.length>1;
@@ -798,6 +798,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
     showShot(0);
     lb.classList.add('open');document.body.style.overflow='hidden';
   }
+  window.openGallery = openGallery;
   function hide(){lb.classList.remove('open');document.body.style.overflow='';}
 
   figures.forEach(function(f){f.addEventListener('click',function(){openGallery(f);});});
@@ -1632,16 +1633,16 @@ if(document.readyState==="loading"){
   const supabaseUrl = 'https://pcgafbehazsieyvpfnch.supabase.co';
   const supabaseKey = 'sb_publishable_gLDAHTotkdn8jYtdcLFIGg_Dewi721u';
   
-  // 👇 We renamed this to supabaseClient 👇
   const supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
 
   async function loadProducts() {
     const grid = document.getElementById('productsGrid');
     if (!grid) return;
 
+    // Added gallery_images to the select statement
     const { data, error } = await supabaseClient
       .from('products')
-      .select('name, description, price_small, price_medium, price_large, main_image_url');
+      .select('name, description, price_small, price_medium, price_large, main_image_url, gallery_images');
 
     if (error) {
       console.error('❌ Supabase Error:', error);
@@ -1680,6 +1681,27 @@ if(document.readyState==="loading"){
       figure.appendChild(image);
       figure.appendChild(tag);
 
+      // --- NEW: Add extra gallery images ---
+      if (product.gallery_images && Array.isArray(product.gallery_images)) {
+        product.gallery_images.forEach(function(url) {
+          if (url && url.trim()) {
+            const extraImg = document.createElement('img');
+            extraImg.src = url;
+            extraImg.className = 'extra-shot'; // Hidden by CSS, but read by the lightbox
+            extraImg.loading = 'lazy';
+            extraImg.alt = product.name || 'Product image';
+            figure.appendChild(extraImg);
+          }
+        });
+      }
+
+      // --- NEW: Attach the lightbox click listener to this dynamic figure ---
+      figure.addEventListener('click', function() {
+        if (typeof window.openGallery === 'function') {
+          window.openGallery(figure);
+        }
+      });
+
       const caption = document.createElement('span');
       caption.className = 'cap';
       caption.textContent = product.name || 'Untitled product';
@@ -1703,9 +1725,6 @@ if(document.readyState==="loading"){
       if (product.description) item.appendChild(description);
       item.appendChild(price);
 
-      // --- Size selection + "Add to order" (mirrors the static shop cards) ---
-      // Each button now maps to its own Supabase column:
-      // S -> price_small, M -> price_medium, L -> price_large.
       var cartProduct = {
         name: product.name || 'Untitled product',
         s: Number.isFinite(numericSmall) ? numericSmall : 0,
