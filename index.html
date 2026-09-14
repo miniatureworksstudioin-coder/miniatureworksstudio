@@ -1641,7 +1641,7 @@ if(document.readyState==="loading"){
 
     const { data, error } = await supabaseClient
       .from('products')
-      .select('name, description, base_price, main_image_url');
+      .select('name, description, price_small, price_medium, price_large, main_image_url');
 
     if (error) {
       console.error('❌ Supabase Error:', error);
@@ -1688,12 +1688,15 @@ if(document.readyState==="loading"){
       description.className = 'product-description';
       description.textContent = product.description || '';
 
+      const numericSmall = Number(product.price_small);
+      const numericMedium = Number(product.price_medium);
+      const numericLarge = Number(product.price_large);
+
       const price = document.createElement('span');
       price.className = 'product-price';
-      const numericPrice = Number(product.base_price);
-      price.textContent = Number.isFinite(numericPrice)
-        ? '₹' + numericPrice.toLocaleString('en-IN')
-        : (product.base_price ? '₹' + product.base_price : 'Price on request');
+      price.textContent = Number.isFinite(numericSmall)
+        ? 'From ₹' + numericSmall.toLocaleString('en-IN')
+        : (product.price_small ? 'From ₹' + product.price_small : 'Price on request');
 
       item.appendChild(figure);
       item.appendChild(caption);
@@ -1701,14 +1704,13 @@ if(document.readyState==="loading"){
       item.appendChild(price);
 
       // --- Size selection + "Add to order" (mirrors the static shop cards) ---
-      // Supabase products only have one base_price (no separate S/M/L prices
-      // yet), so all three size buttons show that same price for now.
-      var sizePrice = Number.isFinite(numericPrice) ? numericPrice : 0;
+      // Each button now maps to its own Supabase column:
+      // S -> price_small, M -> price_medium, L -> price_large.
       var cartProduct = {
         name: product.name || 'Untitled product',
-        s: sizePrice,
-        m: sizePrice,
-        l: sizePrice,
+        s: Number.isFinite(numericSmall) ? numericSmall : 0,
+        m: Number.isFinite(numericMedium) ? numericMedium : 0,
+        l: Number.isFinite(numericLarge) ? numericLarge : 0,
         img: image.src
       };
 
