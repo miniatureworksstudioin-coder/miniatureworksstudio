@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://miniatureworksstudio.netlify.app/sitemap.xml
