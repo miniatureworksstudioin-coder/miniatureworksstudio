@@ -1583,28 +1583,37 @@ function reviewCardHtml(r){
 async function loadReviews(){
   var wrap = $("reviewResults");
   if(!wrap) return;
-  wrap.innerHTML = '<p class="track-empty">Reviews submitted here are reviewed before publication.</p>';
+  wrap.innerHTML = '<p class="track-empty">Loading reviews…</p>';
+  try{
+    var response = await fetch("/api/reviews");
+    var result = {};
+    try{ result = await response.json(); }catch(e){}
+    if(!response.ok) throw new Error(result.error || "Could not load reviews.");
+    var reviews = result.reviews || [];
+    if(!reviews.length){
+      wrap.innerHTML = '<p class="track-empty">No reviews yet — be the first to share one.</p>';
+      return;
+    }
+    wrap.innerHTML = reviews.map(reviewCardHtml).join("");
+  }catch(e){
+    wrap.innerHTML = '<p class="track-empty">'+escapeHtml(e.message || "Could not load reviews.")+'</p>';
+  }
 }
 async function submitReview(){
   var name = val("rName"), text = val("rText");
   if(!name || !reviewRating || !text){ toast("Please add your name, a rating and a short review."); return; }
   var button = $("rSubmitBtn");
   button.disabled = true;
-  var data = new URLSearchParams();
-  data.append("form-name", "reviews");
-  data.append("bot-field", "");
-  data.append("name", name);
-  data.append("rating", String(reviewRating));
-  data.append("review", text);
   try{
-    var response = await fetch("/", {
+    var response = await fetch("/api/reviews", {
       method: "POST",
-      headers: {"Content-Type":"application/x-www-form-urlencoded"},
-      body: data.toString()
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({ name: name, rating: reviewRating, text: text })
     });
     if(!response.ok) throw new Error("The review could not be submitted.");
     $("rName").value = ""; $("rText").value = ""; reviewRating = 0; renderStars();
     toast("Thanks — your review was sent for approval.");
+    loadReviews();
   }catch(e){ toast(e.message || "Could not submit the review."); }
   button.disabled = false;
 }
