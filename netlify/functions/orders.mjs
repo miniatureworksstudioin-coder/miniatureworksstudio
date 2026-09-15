@@ -13,9 +13,10 @@ function buildOrderEmailHtml(order) {
           const name = item.name ?? item.title ?? "Item";
           const qty = item.quantity ?? item.qty ?? 1;
           const price = item.price ?? item.unitPrice ?? "";
-          const imageUrl = item.img
-            ? `https://miniatureworksstudio.netlify.app${String(item.img)}`
-            : "";
+          const imagePath = String(item.img || "");
+          const imageUrl = /^https?:\/\//i.test(imagePath)
+            ? imagePath
+            : `https://miniatureworksstudio.netlify.app${imagePath}`;
 
           const image = item.img
             ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(
