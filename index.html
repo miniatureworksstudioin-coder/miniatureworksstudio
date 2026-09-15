@@ -1357,11 +1357,18 @@ function orderCardHtml(o){
   } else if(o.status!=="Completed"){
     cancelHtml = '<p class="field-hint">Free cancellation window (24 hours from ordering) has closed — message me directly if something has changed.</p>';
   }
+  var completeHtml = o.status === "Completed"
+    ? '<div class="order-complete-banner" style="margin-top:12px;padding:12px 14px;border:1px solid var(--sage);border-radius:var(--radius);background:rgba(91,122,91,.1);display:flex;align-items:center;gap:9px">'
+      + '<span style="flex:0 0 auto;width:20px;height:20px;border-radius:50%;background:var(--sage);color:var(--cream);display:grid;place-items:center;font-size:12px;line-height:1">&check;</span>'
+      + '<strong style="font-size:13.5px;color:var(--ink);font-weight:600">Your order has been completed! Thank you for your business.</strong>'
+      + '</div>'
+    : '';
   return '<div class="order-card">' +
     '<div class="order-card-head"><span class="order-card-id">'+escapeHtml(o.orderId)+' · '+dateStr+'</span>' +
     '<span class="status-pill '+statusClass(o.status)+'">'+escapeHtml(o.status)+'</span></div>' +
     '<div class="order-card-items">'+itemsHtml+'</div>' +
     (o.subtotal ? '<div style="font-size:13px">Estimated total: '+fmtINR(o.subtotal)+'</div>' : '') +
+    completeHtml +
     (cancelHtml ? '<div style="margin-top:10px">'+cancelHtml+'</div>' : '') +
     '</div>';
 }
