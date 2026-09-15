@@ -32,6 +32,11 @@
   to = "/.netlify/functions/find-orders"
   status = 200
 
+[[redirects]]
+  from = "/api/reviews"
+  to = "/.netlify/functions/reviews"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
