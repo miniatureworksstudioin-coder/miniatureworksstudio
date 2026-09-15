@@ -13,6 +13,8 @@ function reviewStore(context) {
 function cleanReview(raw) {
   return {
     name: typeof raw.name === "string" ? raw.name.trim() : "",
+    productName:
+      typeof raw.productName === "string" ? raw.productName.trim() : "",
     rating: Number(raw.rating),
     text: typeof raw.text === "string" ? raw.text.trim() : "",
   };
@@ -20,10 +22,24 @@ function cleanReview(raw) {
 
 function validateReview(review) {
   if (!review.name) return "Name is required.";
-  if (!Number.isFinite(review.rating) || review.rating < 1 || review.rating > 5) {
+
+  if (
+    review.productName !== "" &&
+    typeof review.productName !== "string"
+  ) {
+    return "Product name must be a string.";
+  }
+
+  if (
+    !Number.isFinite(review.rating) ||
+    review.rating < 1 ||
+    review.rating > 5
+  ) {
     return "Rating must be a number between 1 and 5.";
   }
+
   if (!review.text) return "Review text is required.";
+
   return null;
 }
 
@@ -34,18 +50,27 @@ function generateReviewId() {
 async function handlePost(req, context) {
   const review = cleanReview(await parseBody(req));
   const error = validateReview(review);
+
   if (error) return json({ error }, 400);
 
-  const record = { ...review, createdAt: new Date().toISOString() };
+  const record = {
+    ...review,
+    createdAt: new Date().toISOString(),
+  };
+
   const id = generateReviewId();
 
   try {
     const store = reviewStore(context);
     await store.setJSON(id, record);
+
     return json({ ok: true, id, review: record });
   } catch (err) {
     console.error("review_store_failed", err);
-    return json({ error: "Review storage is temporarily unavailable." }, 503);
+    return json(
+      { error: "Review storage is temporarily unavailable." },
+      503
+    );
   }
 }
 
@@ -60,17 +85,54 @@ async function handleGet(context) {
 
     const sorted = reviews
       .filter(Boolean)
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      .sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() -
+          new Date(a.createdAt).getTime()
+      );
 
     return json({ ok: true, reviews: sorted });
   } catch (err) {
     console.error("review_list_failed", err);
-    return json({ error: "Reviews are temporarily unavailable." }, 503);
+    return json(
+      { error: "Reviews are temporarily unavailable." },
+      503
+    );
+  }
+}
+
+async function handleDelete(req, context) {
+  try {
+    const body = await parseBody(req);
+    const id = typeof body.id === "string" ? body.id.trim() : "";
+
+    if (!id) {
+      return json({ error: "Review id is required." }, 400);
+    }
+
+    const store = reviewStore(context);
+    const review = await store.get(id, { type: "json" });
+
+    if (!review) {
+      return json({ error: "Review not found." }, 404);
+    }
+
+    await store.delete(id);
+
+    return json({ ok: true });
+  } catch (err) {
+    console.error("review_delete_failed", err);
+    return json(
+      { error: "Review deletion is temporarily unavailable." },
+      503
+    );
   }
 }
 
 export default async (req, context) => {
   if (req.method === "POST") return handlePost(req, context);
   if (req.method === "GET") return handleGet(context);
+  if (req.method === "DELETE") return handleDelete(req, context);
+
   return json({ error: "Method not allowed." }, 405);
 };

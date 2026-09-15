@@ -347,7 +347,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
 
 /* reviews */
 .stars{display:flex;gap:6px;margin:2px 0 4px}
-.stars button{background:none;border:0;font-size:27px;line-height:1;cursor:pointer;color:var(--line-dark);padding:0;transition:color .15s}
+.stars button{background:none;border:0;font-size:27px;line-height:1;cursor:pointer;color:#ccc;padding:0;transition:color .15s}
 .stars button.on{color:var(--brass)}
 .review-note{font-size:12px;color:var(--ink-soft);margin-top:10px}
 .review-card{border:1px solid var(--line);border-radius:var(--radius);padding:16px;margin-top:14px;background:var(--cream)}
@@ -556,6 +556,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
 <h2 class="fade" data-observe>Customer reviews</h2>
 <p class="section-intro fade" data-observe>Had a piece made already? Leave a rating and a few words. Your review is sent directly to the studio for approval before it is published.</p>
 <div class="field fade" data-observe style="margin-top:22px"><label for="rName">Your name</label><input id="rName" type="text"/></div>
+<div class="field"><label for="rProduct">Product you received</label><select id="rProduct"><option value="">Select a product (optional)</option></select></div>
 <div class="field">
 <label>Your rating</label>
 <div aria-label="Your rating" class="stars" id="rStars" role="group">
@@ -1571,13 +1572,29 @@ function renderStars(){
     b.setAttribute("aria-pressed", Number(b.dataset.v) === reviewRating ? "true" : "false");
   });
 }
+function getMyReviewIds(){
+  try{
+    var ids = JSON.parse(localStorage.getItem("my-review-ids") || "[]");
+    return Array.isArray(ids) ? ids : [];
+  }catch(e){ return []; }
+}
+function saveMyReviewIds(ids){
+  try{ localStorage.setItem("my-review-ids", JSON.stringify(ids)); }catch(e){}
+}
 function reviewCardHtml(r){
   var dateStr = ""; try{ dateStr = new Date(r.createdAt).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}); }catch(e){}
   var starStr = "\u2605".repeat(r.rating) + "\u2606".repeat(5-r.rating);
+  var myReviewIds = getMyReviewIds();
+  var deleteHtml = myReviewIds.indexOf(r.id) > -1
+    ? '<button class="btn btn-small delete-review-btn" data-id="'+escapeHtml(r.id)+'" style="margin-top:10px;background:var(--rust);color:var(--cream);border:0;cursor:pointer" type="button">Delete</button>'
+    : "";
   return '<div class="review-card">' +
-    '<div class="review-card-head"><span class="review-card-name">'+escapeHtml(r.name)+'</span><span class="review-card-date">'+dateStr+'</span></div>' +
+    '<div class="review-card-head"><div><span class="review-card-name">'+escapeHtml(r.name)+'</span>' +
+    (r.productName ? '<div class="review-card-product">Purchased: '+escapeHtml(r.productName)+'</div>' : '') +
+    '</div><span class="review-card-date">'+dateStr+'</span></div>' +
     '<div class="review-card-stars">'+starStr+'</div>' +
     '<div class="review-card-text">'+escapeHtml(r.text)+'</div>' +
+    deleteHtml +
     '</div>';
 }
 async function loadReviews(){
@@ -1599,8 +1616,24 @@ async function loadReviews(){
     wrap.innerHTML = '<p class="track-empty">'+escapeHtml(e.message || "Could not load reviews.")+'</p>';
   }
 }
+async function deleteReview(id){
+  if(!confirm("Delete this review? This can't be undone.")) return;
+  try{
+    var response = await fetch("/api/reviews", {
+      method: "DELETE",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({id:id})
+    });
+    var result = {};
+    try{ result = await response.json(); }catch(e){}
+    if(!response.ok) throw new Error(result.error || "The review could not be deleted.");
+    saveMyReviewIds(getMyReviewIds().filter(function(reviewId){ return reviewId !== id; }));
+    toast("Your review was deleted.");
+    loadReviews();
+  }catch(e){ toast(e.message || "Could not delete the review."); }
+}
 async function submitReview(){
-  var name = val("rName"), text = val("rText");
+  var name = val("rName"), productName = val("rProduct"), text = val("rText");
   if(!name || !reviewRating || !text){ toast("Please add your name, a rating and a short review."); return; }
   var button = $("rSubmitBtn");
   button.disabled = true;
@@ -1608,10 +1641,17 @@ async function submitReview(){
     var response = await fetch("/api/reviews", {
       method: "POST",
       headers: {"Content-Type":"application/json"},
-      body: JSON.stringify({ name: name, rating: reviewRating, text: text })
+      body: JSON.stringify({ name: name, productName: productName, rating: reviewRating, text: text })
     });
-    if(!response.ok) throw new Error("The review could not be submitted.");
-    $("rName").value = ""; $("rText").value = ""; reviewRating = 0; renderStars();
+    var result = {};
+    try{ result = await response.json(); }catch(e){}
+    if(!response.ok) throw new Error(result.error || "The review could not be submitted.");
+    if(result.id){
+      var myReviewIds = getMyReviewIds();
+      if(myReviewIds.indexOf(result.id) === -1) myReviewIds.push(result.id);
+      saveMyReviewIds(myReviewIds);
+    }
+    $("rName").value = ""; $("rProduct").value = ""; $("rText").value = ""; reviewRating = 0; renderStars();
     toast("Thanks — your review was sent for approval.");
     loadReviews();
   }catch(e){ toast(e.message || "Could not submit the review."); }
@@ -1671,6 +1711,10 @@ function init(){
     b.addEventListener("click", function(){ reviewRating = Number(b.dataset.v); renderStars(); });
   });
   $("rSubmitBtn").addEventListener("click", submitReview);
+  $("reviewResults").addEventListener("click", function(e){
+    var deleteButton = e.target.closest(".delete-review-btn");
+    if(deleteButton) deleteReview(deleteButton.dataset.id);
+  });
   renderStars();
   loadReviews();
   $("trackInput").addEventListener("keydown", function(e){ if(e.key==="Enter") trackOrder(); });
@@ -1870,6 +1914,17 @@ if(document.readyState==="loading"){
     data.forEach(function(product, index){
       grid.appendChild(buildProductCard(product, index));
     });
+
+    var productSelect = document.getElementById('rProduct');
+    if (productSelect) {
+      data.forEach(function(product){
+        if (!product.name) return;
+        var option = document.createElement('option');
+        option.value = product.name;
+        option.textContent = product.name;
+        productSelect.appendChild(option);
+      });
+    }
   }
 
   loadProducts();

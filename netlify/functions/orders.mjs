@@ -13,7 +13,15 @@ function buildOrderEmailHtml(order) {
           const name = item.name ?? item.title ?? "Item";
           const qty = item.quantity ?? item.qty ?? 1;
           const price = item.price ?? item.unitPrice ?? "";
-          return `<li>${qty} x ${escapeHtml(String(name))}${price !== "" ? ` — ${escapeHtml(String(price))}` : ""}</li>`;
+          const image = item.img
+            ? `<img src="${escapeHtml(String(item.img))}" alt="${escapeHtml(
+                String(name)
+              )}" width="100" style="width:100px;margin:4px 8px 4px 0;vertical-align:middle;" />`
+            : "";
+
+          return `<li>${image}${qty} x ${escapeHtml(String(name))}${
+            price !== "" ? ` — ${escapeHtml(String(price))}` : ""
+          }</li>`;
         })
         .join("")
     : "";
@@ -21,8 +29,15 @@ function buildOrderEmailHtml(order) {
   const detailsRows = Object.entries(rest)
     .map(([key, value]) => {
       const displayValue =
-        typeof value === "object" && value !== null ? JSON.stringify(value) : String(value);
-      return `<tr><td style="padding:4px 8px;font-weight:bold;">${escapeHtml(key)}</td><td style="padding:4px 8px;">${escapeHtml(displayValue)}</td></tr>`;
+        typeof value === "object" && value !== null
+          ? JSON.stringify(value)
+          : String(value);
+
+      return `<tr><td style="padding:4px 8px;font-weight:bold;">${escapeHtml(
+        key
+      )}</td><td style="padding:4px 8px;">${escapeHtml(
+        displayValue
+      )}</td></tr>`;
     })
     .join("");
 
@@ -77,14 +92,27 @@ async function sendOrderNotificationEmail(order) {
 }
 
 export default async (req, context) => {
-  if (req.method !== "POST") return json({ error: "Method not allowed." }, 405);
+  if (req.method !== "POST") {
+    return json({ error: "Method not allowed." }, 405);
+  }
+
   const order = cleanOrder(await parseBody(req));
   const error = validateOrder(order);
+
   if (error) return json({ error }, 400);
+
   try {
     const store = orderStore(context);
     const existing = await store.get(order.orderId, { type: "json" });
-    if (existing) return json({ ok: true, orderId: order.orderId, duplicate: true });
+
+    if (existing) {
+      return json({
+        ok: true,
+        orderId: order.orderId,
+        duplicate: true,
+      });
+    }
+
     await store.setJSON(order.orderId, order);
 
     try {
@@ -97,6 +125,9 @@ export default async (req, context) => {
     return json({ ok: true, orderId: order.orderId });
   } catch (error) {
     console.error("order_store_failed", error);
-    return json({ error: "Order storage is temporarily unavailable." }, 503);
+    return json(
+      { error: "Order storage is temporarily unavailable." },
+      503
+    );
   }
 };
