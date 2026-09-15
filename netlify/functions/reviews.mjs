@@ -53,12 +53,13 @@ async function handlePost(req, context) {
 
   if (error) return json({ error }, 400);
 
+  const id = generateReviewId();
+
   const record = {
+    id,
     ...review,
     createdAt: new Date().toISOString(),
   };
-
-  const id = generateReviewId();
 
   try {
     const store = reviewStore(context);
@@ -80,7 +81,10 @@ async function handleGet(context) {
     const { blobs } = await store.list();
 
     const reviews = await Promise.all(
-      blobs.map(({ key }) => store.get(key, { type: "json" }))
+      blobs.map(async ({ key }) => {
+        const data = await store.get(key, { type: "json" });
+        return data ? { ...data, id: key } : null;
+      })
     );
 
     const sorted = reviews

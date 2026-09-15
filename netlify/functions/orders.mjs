@@ -13,8 +13,12 @@ function buildOrderEmailHtml(order) {
           const name = item.name ?? item.title ?? "Item";
           const qty = item.quantity ?? item.qty ?? 1;
           const price = item.price ?? item.unitPrice ?? "";
+          const imageUrl = item.img
+            ? `https://miniatureworksstudio.netlify.app${String(item.img)}`
+            : "";
+
           const image = item.img
-            ? `<img src="${escapeHtml(String(item.img))}" alt="${escapeHtml(
+            ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(
                 String(name)
               )}" width="100" style="width:100px;margin:4px 8px 4px 0;vertical-align:middle;" />`
             : "";
