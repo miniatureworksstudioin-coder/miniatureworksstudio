@@ -24,7 +24,7 @@ export const normalizePhone = (value) => {
   return digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : digits;
 };
 
-export const orderStore = () => getStore("miniature-works-orders");
+export const orderStore = (context) => getStore({ name: "miniature-works-orders", context });
 
 export const validOrderId = (value) => /^MWS-\d{6}-\d{4}$/.test(String(value || "").toUpperCase());
 

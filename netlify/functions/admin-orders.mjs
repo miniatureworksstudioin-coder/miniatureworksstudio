@@ -2,18 +2,18 @@ import { isAdminRequest, json, orderStore, parseBody } from "./_shared.mjs";
 
 const statuses = ["Received", "Awaiting quote", "Confirmed", "In Progress", "Ready", "Completed", "Cancelled"];
 
-export default async (request) => {
-  if (!isAdminRequest(request)) return json({ error: "Unauthorized." }, 401);
-  const store = orderStore();
+export default async (req, context) => {
+  if (!isAdminRequest(req)) return json({ error: "Unauthorized." }, 401);
+  const store = orderStore(context);
   try {
-    if (request.method === "GET") {
+    if (req.method === "GET") {
       const { blobs } = await store.list();
       const orders = (await Promise.all(blobs.map((blob) => store.get(blob.key, { type: "json" })))).filter(Boolean);
       orders.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       return json({ ok: true, orders });
     }
-    if (request.method === "PUT") {
-      const body = await parseBody(request);
+    if (req.method === "PUT") {
+      const body = await parseBody(req);
       const orderId = String(body.orderId || "").toUpperCase();
       if (!statuses.includes(body.status)) return json({ error: "Invalid status." }, 400);
       const order = await store.get(orderId, { type: "json" });

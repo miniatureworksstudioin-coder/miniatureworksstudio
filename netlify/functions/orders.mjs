@@ -1,12 +1,12 @@
 import { json, orderStore, parseBody, cleanOrder, validateOrder } from "./_shared.mjs";
 
-export default async (request) => {
-  if (request.method !== "POST") return json({ error: "Method not allowed." }, 405);
-  const order = cleanOrder(await parseBody(request));
+export default async (req, context) => {
+  if (req.method !== "POST") return json({ error: "Method not allowed." }, 405);
+  const order = cleanOrder(await parseBody(req));
   const error = validateOrder(order);
   if (error) return json({ error }, 400);
   try {
-    const store = orderStore();
+    const store = orderStore(context);
     const existing = await store.get(order.orderId, { type: "json" });
     if (existing) return json({ ok: true, orderId: order.orderId, duplicate: true });
     await store.setJSON(order.orderId, order);
