@@ -545,6 +545,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
 <div class="field"><label for="trackPhone">Phone number</label><input autocomplete="tel" id="trackPhone" inputmode="tel" placeholder="10-digit mobile" type="tel"/></div>
 <button class="btn btn-dark" id="trackBtn" type="button">Check status</button>
 </div>
+<button id="forgotIdBtn" style="background:none;border:none;padding:0;margin-top:10px;font:inherit;font-size:13px;color:var(--blue);text-decoration:underline;cursor:pointer" type="button">Forgot your Order ID?</button>
 <div aria-live="polite" id="trackResults"></div>
 </div>
 </section>
@@ -1414,6 +1415,41 @@ async function trackOrder(){
     results.innerHTML = orderCardHtml(result.order);
   }catch(e){ results.innerHTML = '<p class="track-empty">'+escapeHtml(e.message || "Could not look up this order.")+'</p>'; }
 }
+async function findOrders(){
+  var phone = normPhone(prompt("Enter the phone number used when ordering:") || "");
+  if(!phone) return;
+  var results = $("trackResults");
+  if(phone.length<10){
+    results.innerHTML = '<p class="track-empty">Enter a valid 10-digit phone number.</p>';
+    return;
+  }
+  results.innerHTML = '<p class="track-empty">Searching…</p>';
+  try{
+    var response = await fetch("/api/find-orders", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({phone:phone})
+    });
+    var result = {};
+    try{ result = await response.json(); }catch(e){}
+    if(!response.ok) throw new Error(result.error || "No orders found for that phone number.");
+    $("trackPhone").value = phone;
+    results.innerHTML = foundOrdersHtml(result.orders);
+  }catch(e){ results.innerHTML = '<p class="track-empty">'+escapeHtml(e.message || "Could not look up orders.")+'</p>'; }
+}
+function foundOrdersHtml(orders){
+  var rows = orders.map(function(o){
+    var dateStr = "";
+    try{ dateStr = new Date(o.createdAt).toLocaleDateString("en-IN",{day:"numeric",month:"short",year:"numeric"}); }catch(e){}
+    var itemCount = Array.isArray(o.items) ? o.items.length : 0;
+    return '<div class="order-card found-order-card" data-id="'+escapeHtml(o.orderId)+'" style="cursor:pointer">' +
+      '<div class="order-card-head"><span class="order-card-id">'+escapeHtml(o.orderId)+' · '+dateStr+'</span>' +
+      '<span class="status-pill '+statusClass(o.status)+'">'+escapeHtml(o.status)+'</span></div>' +
+      (itemCount ? '<div class="field-hint">'+itemCount+' item'+(itemCount===1?'':'s')+'</div>' : '') +
+      '</div>';
+  }).join("");
+  return '<p class="field-hint">Orders found for that phone number — tap one to check its status:</p>' + rows;
+}
 
 /* ---------------- admin ---------------- */
 async function adminLogin(){
@@ -1624,10 +1660,15 @@ function init(){
   $("trackInput").addEventListener("keydown", function(e){ if(e.key==="Enter") trackOrder(); });
   $("trackPhone").addEventListener("keydown", function(e){ if(e.key==="Enter") trackOrder(); });
   $("trackResults").addEventListener("click", function(e){
-    var btn = e.target.closest(".cancel-order-btn");
-    if(!btn) return;
-    cancelOrder(btn.dataset.id);
+    var cancelBtn = e.target.closest(".cancel-order-btn");
+    if(cancelBtn){ cancelOrder(cancelBtn.dataset.id); return; }
+    var foundCard = e.target.closest(".found-order-card");
+    if(foundCard){
+      $("trackInput").value = foundCard.dataset.id;
+      trackOrder();
+    }
   });
+  $("forgotIdBtn").addEventListener("click", findOrders);
 
   $("adminOpenBtn").addEventListener("click", function(){ $("adminOverlay").classList.add("open"); });
   $("adminCloseBtn").addEventListener("click", function(){ $("adminOverlay").classList.remove("open"); });
