@@ -1272,7 +1272,6 @@ async function submitCatalogOrder(){
   submitButton.textContent = "Sending…";
   try{
     await submitOrderToBackend(order);
-    await submitOrderToNetlify(order);
   }catch(e){
     toast(e.message || "Could not send your order. Please check your connection and try again.");
     submitButton.disabled = false;
@@ -1313,7 +1312,6 @@ async function submitCustomOrder(e){
   order.pincode = pincode;
   try{
     await submitOrderToBackend(order);
-    await submitCustomOrderToNetlify(order);
   }catch(err){
     toast(err.message || "Could not send your request. Please check your connection and try again.");
     customButton.disabled = false;
