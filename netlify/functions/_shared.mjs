@@ -42,6 +42,8 @@ export const publicOrder = (order) => ({
   description: order.description || "",
   sizeCategory: order.sizeCategory || "",
   delivery: order.delivery || null,
+  deliveryCharge: order.deliveryCharge || 0,
+  total: order.total || 0,
 });
 
 const base64url = (value) => Buffer.from(value).toString("base64url");
@@ -130,13 +132,24 @@ export const cleanOrder = (body) => ({
   sizeCategory: String(body.sizeCategory || "").trim().slice(0, 40),
   delivery:
     body.delivery && typeof body.delivery === "object"
-      ? body.delivery
+      ? {
+          method: body.delivery.method === "pickup" ? "pickup" : "delivery",
+          charge: Math.max(0, Number(body.delivery.charge) || 0),
+        }
       : null,
+  deliveryCharge: Math.max(0, Number(body.deliveryCharge) || 0),
+  total: Math.max(0, Number(body.total) || 0),
   createdAt: new Date().toISOString(),
   status:
     body.status ||
     (body.orderType === "custom" ? "Awaiting quote" : "Received"),
 });
+
+// Deliberately loose: we only reject addresses that clearly can't be delivered to.
+export const validEmail = (value) => {
+  const email = String(value || "").trim();
+  return email.includes("@") && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+};
 
 export const validateOrder = (order) => {
   if (!validOrderId(order.orderId)) return "Invalid order ID.";
@@ -145,14 +158,25 @@ export const validateOrder = (order) => {
     return "Name and a valid phone number are required.";
   }
 
-  if (
-    order.orderType === "catalog" &&
-    (!order.items.length ||
-      !order.address ||
-      !order.city ||
-      !/^\d{6}$/.test(order.pincode))
-  ) {
-    return "A catalog order needs items, an address, a city and a 6-digit pincode.";
+  if (!validEmail(order.email)) {
+    return "A valid email is required.";
+  }
+
+  if (order.orderType === "catalog") {
+    if (!order.items.length) {
+      return "A catalog order needs at least one item.";
+    }
+
+    // Studio pickup carries no address — the customer collects from Modinagar,
+    // so only home delivery has to supply one.
+    const isPickup = order.delivery && order.delivery.method === "pickup";
+
+    if (
+      !isPickup &&
+      (!order.address || !order.city || !/^\d{6}$/.test(order.pincode))
+    ) {
+      return "A home delivery order needs an address, a city and a 6-digit pincode.";
+    }
   }
 
   if (order.orderType === "custom" && !order.description) {

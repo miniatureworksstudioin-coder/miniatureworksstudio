@@ -305,6 +305,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
 .order-summary-row{display:flex;justify-content:space-between;padding:5px 0}
 .order-summary-total{border-top:1px solid var(--line);margin-top:6px;padding-top:9px;font-weight:600}
 .size-radio-row{display:flex;flex-wrap:wrap;gap:8px}
+.pickup-info{background:var(--cream);border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;margin:-6px 0 16px;line-height:1.5}
 .size-radio{border:1px solid var(--line);border-radius:99px;padding:8px 16px;font-size:13px;cursor:pointer;background:var(--cream)}
 .size-radio input{display:none}
 .size-radio.checked{background:var(--walnut);color:var(--cream);border-color:var(--walnut)}
@@ -510,7 +511,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
 <div class="field"><label for="cPhone">Phone number</label><input autocomplete="tel" id="cPhone" inputmode="tel" name="phone" pattern="[0-9+ ()-]{10,}" placeholder="10-digit mobile" required type="tel"/></div>
 </div>
 <div class="form-row2">
-<div class="field"><label for="cEmail">Email (optional)</label><input autocomplete="email" id="cEmail" name="email" type="email"/></div>
+<div class="field"><label for="cEmail">Email</label><input autocomplete="email" id="cEmail" name="email" required type="email"/></div>
 <div class="field"><label for="cCity">City</label><input autocomplete="address-level2" id="cCity" name="city" required type="text"/></div>
 </div>
 <div class="field"><label for="cAddress">Delivery address (optional for quote)</label><textarea autocomplete="street-address" id="cAddress" name="address" placeholder="House no., street, landmark"></textarea></div>
@@ -607,17 +608,28 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
 <div class="drawer-view" id="viewCheckout">
 <button class="drawer-back" id="backToCartBtn" type="button">&larr; Back to order</button>
 <div class="order-summary" id="checkoutSummary"></div>
+<div class="field">
+<label>Delivery method</label>
+<div class="size-radio-row" id="deliveryMethodRow">
+<label class="size-radio checked"><input type="radio" name="deliveryMethod" value="delivery" checked/>Home Delivery (₹100)</label>
+<label class="size-radio"><input type="radio" name="deliveryMethod" value="pickup"/>Local Pickup (Free) — travel to our Modinagar studio</label>
+</div>
+</div>
+<div class="field-hint pickup-info" id="pickupInfo" style="display:none">Local pickup available from our studio in Modinagar, Ghaziabad (near Modinagar North RRTS station). The exact address and a pickup time slot will be shared with you by email after we confirm your order.</div>
 <div class="field"><label for="oName">Name</label><input autocomplete="name" id="oName" required type="text"/></div>
 <div class="form-row2">
 <div class="field"><label for="oPhone">Phone number</label><input autocomplete="tel" id="oPhone" inputmode="tel" pattern="[0-9+ ()-]{10,}" placeholder="10-digit mobile" required type="tel"/></div>
-<div class="field"><label for="oEmail">Email (optional)</label><input autocomplete="email" id="oEmail" type="email"/></div>
+<div class="field"><label for="oEmail">Email</label><input autocomplete="email" id="oEmail" required type="email"/></div>
 </div>
+<div id="deliveryFields">
 <div class="field"><label for="oAddress">Delivery address</label><textarea autocomplete="street-address" id="oAddress" placeholder="House no., street, landmark" required></textarea></div>
 <div class="form-row2">
 <div class="field"><label for="oCity">City</label><input autocomplete="address-level2" id="oCity" required type="text"/></div>
 <div class="field"><label for="oPin">Pincode</label><input autocomplete="postal-code" id="oPin" inputmode="numeric" maxlength="6" pattern="[0-9]{6}" required type="text"/></div>
 </div>
 <p class="field-hint" id="deliveryZoneNote"></p>
+</div>
+<p class="field-hint">Your order confirmation is emailed to you, so please double-check the address above.</p>
 <div class="field"><label for="oNotes">Notes (optional)</label><textarea id="oNotes" placeholder="Colours, personalisation, delivery timing..."></textarea></div>
 <button class="btn btn-dark btn-block" id="submitOrderBtn" type="button">Place order</button>
 </div>
@@ -659,6 +671,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
 <input name="sizeCategory" type="text"/>
 <input name="notes" type="text"/>
 <input name="delivery" type="text"/>
+<input name="deliveryMethod" type="text"/>
 <input name="photoAttached" type="text"/>
 </form>
 <form name="custom-orders" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
@@ -924,6 +937,7 @@ var allOrdersCache = [];
 function $(id){ return document.getElementById(id); }
 function val(id){ var el=$(id); return el ? el.value.trim() : ""; }
 function fmtINR(n){ return "₹" + Number(n||0).toLocaleString("en-IN"); }
+function validEmail(v){ return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((v||"").trim()); }
 function normPhone(v){
   var digits = (v||"").replace(/\D/g,"");
   return digits.length===12 && digits.indexOf("91")===0 ? digits.slice(2) : digits;
@@ -969,6 +983,7 @@ async function saveCart(){
   try{ await window.storage.set("cart", JSON.stringify(cart), false); }catch(e){}
 }
 function cartCount(){ return cart.reduce(function(s,i){ return s+i.qty; },0); }
+var DELIVERY_CHARGE = 100;
 function cartSubtotal(){ return cart.reduce(function(s,i){ return s + (i.quote?0:i.price*i.qty); },0); }
 
 function renderCart(){
@@ -1117,11 +1132,20 @@ function closeDrawer(){
   $("orderDrawer").setAttribute("aria-hidden","true");
   document.body.style.overflow = "";
 }
+function selectedDeliveryMethod(){
+  var el = document.querySelector('input[name="deliveryMethod"]:checked');
+  return el && el.value === "pickup" ? "pickup" : "delivery";
+}
+function deliveryChargeFor(method){ return method === "pickup" ? 0 : DELIVERY_CHARGE; }
+
 function renderCheckoutSummary(){
+  var method = selectedDeliveryMethod();
+  var charge = deliveryChargeFor(method);
   var html = cart.map(function(i){
     return '<div class="order-summary-row"><span>'+escapeHtml(i.name)+' ('+i.size+') &times; '+i.qty+'</span><span>'+(i.quote?'Quote':fmtINR(i.price*i.qty))+'</span></div>';
   }).join("");
-  html += '<div class="order-summary-row order-summary-total"><span>Estimated total</span><span>'+fmtINR(cartSubtotal())+'</span></div>';
+  html += '<div class="order-summary-row"><span>Delivery</span><span>'+(method==="pickup" ? 'Free (Pickup)' : fmtINR(charge))+'</span></div>';
+  html += '<div class="order-summary-row order-summary-total"><span>Estimated total</span><span>'+fmtINR(cartSubtotal()+charge)+'</span></div>';
   $("checkoutSummary").innerHTML = html;
 }
 
@@ -1143,9 +1167,8 @@ function buildSummaryText(order){
   }
   if(order.address) lines.push("Address: "+order.address+", "+order.city+" "+(order.pincode||""));
   if(order.delivery){
-    if(order.delivery.ok && order.delivery.free) lines.push("Delivery: Free (within 20km of Modinagar, ~"+order.delivery.km.toFixed(1)+"km)");
-    else if(order.delivery.ok) lines.push("Delivery: Outside free zone (~"+order.delivery.km.toFixed(1)+"km from Modinagar) — charge to be confirmed");
-    else lines.push("Delivery: Could not auto-check area — confirm delivery charge with customer");
+    if(order.delivery.method === "pickup") lines.push("Delivery: Local Pickup (Free) — customer collects from the Modinagar studio");
+    else lines.push("Delivery: Home Delivery ("+fmtINR(order.delivery.charge||DELIVERY_CHARGE)+")");
   }
   if(order.notes) lines.push("Notes: "+order.notes);
   return lines.join("\n");
@@ -1184,7 +1207,8 @@ async function submitOrderToNetlify(order){
   data.append("description", order.description || "");
   data.append("sizeCategory", order.sizeCategory || "");
   data.append("notes", order.notes || "");
-  data.append("delivery", order.delivery ? (order.delivery.free ? "Free delivery" : "Delivery charge to be confirmed") : "");
+  data.append("deliveryMethod", order.delivery ? order.delivery.method : "");
+  data.append("delivery", order.delivery ? (order.delivery.method === "pickup" ? "Local Pickup (Free)" : "Home Delivery ("+fmtINR(order.delivery.charge)+")") : "");
   data.append("photoAttached", order.photo ? "Yes" : "No");
   var response = await fetch("/", {
     method: "POST",
@@ -1217,11 +1241,47 @@ async function submitCustomOrderToNetlify(order){
   if(!response.ok) throw new Error("The custom request could not be submitted.");
 }
 
+/* ---------------- delivery method (home delivery vs studio pickup) ---------------- */
+function applyDeliveryMethod(){
+  var isPickup = selectedDeliveryMethod() === "pickup";
+
+  document.querySelectorAll('#deliveryMethodRow .size-radio').forEach(function(l){
+    var input = l.querySelector('input[name="deliveryMethod"]');
+    l.classList.toggle("checked", !!(input && input.checked));
+  });
+
+  var info = $("pickupInfo");
+  if(info) info.style.display = isPickup ? "block" : "none";
+
+  var fields = $("deliveryFields");
+  if(fields) fields.style.display = isPickup ? "none" : "block";
+
+  ["oAddress","oCity","oPin"].forEach(function(id){
+    var el = $(id);
+    if(!el) return;
+    if(isPickup) el.removeAttribute("required");
+    else el.setAttribute("required","required");
+  });
+
+  if(isPickup){
+    var note = $("deliveryZoneNote");
+    if(note) note.textContent = "";
+    lastDeliveryCheck = null;
+  }
+
+  if(document.getElementById("checkoutSummary")) renderCheckoutSummary();
+}
+
 /* ---------------- delivery zone check ---------------- */
 var lastDeliveryCheck = null;
 async function updateDeliveryNote(){
   var note = $("deliveryZoneNote");
   if(!note) return;
+  if(selectedDeliveryMethod() === "pickup"){
+    note.textContent = "";
+    lastDeliveryCheck = null;
+    return;
+  }
   var pin = val("oPin");
   if(!/^\d{6}$/.test((pin||"").trim())){
     note.textContent = "";
@@ -1258,16 +1318,35 @@ function showConfirmation(order){
 async function submitCatalogOrder(){
   var name=val("oName"), phone=normPhone(val("oPhone")), email=val("oEmail"),
       address=val("oAddress"), city=val("oCity"), pin=val("oPin"), notes=val("oNotes");
-  if(!name || phone.length<10 || !address || !city || !/^\d{6}$/.test(pin)){
-    toast("Please fill in name, a valid phone, address, city and 6-digit pincode.");
+  var method = selectedDeliveryMethod();
+  var isPickup = method === "pickup";
+  var charge = deliveryChargeFor(method);
+
+  if(!name || phone.length<10){
+    toast("Please fill in your name and a valid 10-digit phone number.");
     return;
   }
+  if(!validEmail(email)){
+    toast("Please enter a valid email address — we send your order confirmation there.");
+    return;
+  }
+  if(isPickup){
+    // Pickup orders need no address at all — the studio address goes out by email
+    // once the order is confirmed.
+    address = ""; city = ""; pin = "";
+  } else if(!address || !city || !/^\d{6}$/.test(pin)){
+    toast("Please fill in address, city and a 6-digit pincode for home delivery.");
+    return;
+  }
+
   var order = {
     orderId: genOrderId(), orderType:"catalog", customerId: phone,
     name:name, phone:phone, email:email, address:address, city:city, pincode:pin, notes:notes,
     items: cart.map(function(i){ return {name:i.name, size:i.size, qty:i.qty, price:i.price, quote:!!i.quote, img:i.img}; }),
     subtotal: cartSubtotal(), status:"Received", createdAt: new Date().toISOString(),
-    delivery: lastDeliveryCheck
+    delivery: isPickup ? {method:"pickup", charge:0} : {method:"delivery", charge:charge},
+    deliveryCharge: charge,
+    total: cartSubtotal() + charge
   };
   var submitButton = $("submitOrderBtn");
   submitButton.disabled = true;
@@ -1297,6 +1376,10 @@ async function submitCustomOrder(e){
   var sizeCategory = sizeEl ? sizeEl.value : "";
   if(!name || phone.length<10 || !city || !description){
     toast("Please add your name, phone, city and a description.");
+    return;
+  }
+  if(!validEmail(email)){
+    toast("Please enter a valid email address — we send your confirmation there.");
     return;
   }
   var fileInput = $("cPhoto");
@@ -1518,6 +1601,7 @@ function renderAdminList(orders){
       '<div class="admin-order-body">' +
         '<div><b>'+escapeHtml(o.name)+'</b> · '+escapeHtml(o.phone)+(o.email?(' · '+escapeHtml(o.email)):'')+'</div>' +
         '<div>'+itemsHtml+'</div>' +
+        (o.delivery && o.delivery.method === "pickup" ? '<div><b>Local Pickup</b> — customer collects from the Modinagar studio</div>' : '') +
         (o.address ? '<div>'+escapeHtml(o.address)+', '+escapeHtml(o.city||"")+' '+escapeHtml(o.pincode||"")+'</div>' : '') +
         (o.notes ? '<div>Note: '+escapeHtml(o.notes)+'</div>' : '') +
         (o.subtotal ? '<div>Estimated total: '+fmtINR(o.subtotal)+'</div>' : '') +
@@ -1675,6 +1759,11 @@ function init(){
   });
   $("submitOrderBtn").addEventListener("click", submitCatalogOrder);
   $("oPin").addEventListener("blur", updateDeliveryNote);
+
+  document.querySelectorAll('input[name="deliveryMethod"]').forEach(function(inp){
+    inp.addEventListener("change", applyDeliveryMethod);
+  });
+  applyDeliveryMethod();
   $("confirmCloseBtn").addEventListener("click", closeDrawer);
 
   $("cartLines").addEventListener("click", function(e){
