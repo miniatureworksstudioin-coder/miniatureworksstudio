@@ -1,7 +1,5 @@
 import { json, orderStore, parseBody, cleanOrder, validateOrder } from "./_shared.mjs";
 
-const RESEND_API_URL = "https://api.resend.com/emails";
-
 const SITE_URL = "https://miniatureworksstudio.netlify.app";
 const DEFAULT_DELIVERY_CHARGE = 100;
 
@@ -273,7 +271,7 @@ function buildCustomerEmailHtml(order) {
 }
 
 async function sendCustomerConfirmationEmail(order) {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = process.env.BREVO_API_KEY;
   const to = String(order.email || "").trim();
 
   if (!apiKey || !to) {
@@ -284,28 +282,31 @@ async function sendCustomerConfirmationEmail(order) {
     return;
   }
 
-  const response = await fetch(RESEND_API_URL, {
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      "api-key": apiKey,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: process.env.RESEND_FROM_EMAIL || "orders@resend.dev",
-      to: [to],
+      sender: {
+        name: "Miniature Works Studio",
+        email: process.env.BREVO_SENDER_EMAIL,
+      },
+      to: [{ email: to }],
       subject: `Order Received: ${order.orderId} \u2014 Miniature Works Studio`,
-      html: buildCustomerEmailHtml(order),
+      htmlContent: buildCustomerEmailHtml(order),
     }),
   });
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    throw new Error(`Resend API responded with ${response.status}: ${body}`);
+    throw new Error(`Brevo API responded with ${response.status}: ${body}`);
   }
 }
 
 async function sendOrderNotificationEmail(order) {
-  const apiKey = process.env.RESEND_API_KEY;
+  const apiKey = process.env.BREVO_API_KEY;
   const to = process.env.NOTIFICATION_EMAIL;
 
   if (!apiKey || !to) {
@@ -316,23 +317,26 @@ async function sendOrderNotificationEmail(order) {
     return;
   }
 
-  const response = await fetch(RESEND_API_URL, {
+  const response = await fetch("https://api.brevo.com/v3/smtp/email", {
     method: "POST",
     headers: {
-      Authorization: `Bearer ${apiKey}`,
+      "api-key": apiKey,
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      from: process.env.RESEND_FROM_EMAIL || "orders@resend.dev",
-      to: [to],
+      sender: {
+        name: "Miniature Works Studio",
+        email: process.env.BREVO_SENDER_EMAIL,
+      },
+      to: [{ email: to }],
       subject: `New Order Received: ${order.orderId}`,
-      html: buildOrderEmailHtml(order),
+      htmlContent: buildOrderEmailHtml(order),
     }),
   });
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    throw new Error(`Resend API responded with ${response.status}: ${body}`);
+    throw new Error(`Brevo API responded with ${response.status}: ${body}`);
   }
 }
 

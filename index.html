@@ -391,6 +391,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
 <a href="#work">Shop</a>
 <a href="#custom">Custom Order</a>
 <a href="#track">Track Order</a>
+<a href="#my-orders">My Orders</a>
 <a href="#reviews">Reviews</a>
 <a href="#favourites">Favourites</a>
 <a href="#about">About</a>
@@ -551,6 +552,23 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
 </div>
 </section>
 
+<section id="my-orders">
+<div class="wrap track-box">
+<p class="eyebrow">My Orders</p>
+<h2 class="fade" data-observe>My Orders</h2>
+<p class="section-intro fade" data-observe>Enter your phone number to receive a one-time code by email, then see all your past orders.</p>
+<div class="track-row fade" data-observe style="margin-top:22px">
+<div class="field"><label for="myOrdersPhone">Phone number</label><input autocomplete="tel" id="myOrdersPhone" inputmode="tel" placeholder="10-digit mobile" type="tel"/></div>
+<button class="btn btn-dark" id="requestOtpBtn" type="button">Send code</button>
+</div>
+<div class="track-row fade" data-observe style="margin-top:12px">
+<div class="field"><input aria-label="Verification code" autocomplete="off" id="myOrdersCode" inputmode="numeric" placeholder="6-digit code" style="display:none" type="text"/></div>
+<button class="btn btn-dark" id="verifyOtpBtn" style="display:none" type="button">Verify</button>
+</div>
+<div aria-live="polite" id="myOrdersResults"></div>
+</div>
+</section>
+
 <section id="reviews">
 <div class="wrap track-box">
 <p class="eyebrow">Reviews</p>
@@ -618,8 +636,25 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
 <div class="field-hint pickup-info" id="pickupInfo" style="display:none">Local pickup available from our studio in Modinagar, Ghaziabad (near Modinagar North RRTS station). The exact address and a pickup time slot will be shared with you by email after we confirm your order.</div>
 <div class="field"><label for="oName">Name</label><input autocomplete="name" id="oName" required type="text"/></div>
 <div class="form-row2">
-<div class="field"><label for="oPhone">Phone number</label><input autocomplete="tel" id="oPhone" inputmode="tel" pattern="[0-9+ ()-]{10,}" placeholder="10-digit mobile" required type="tel"/></div>
+<div class="field">
+<label for="oPhone">Phone number</label>
+<input autocomplete="tel" id="oPhone" inputmode="tel" pattern="[0-9+ ()-]{10,}" placeholder="10-digit mobile" required type="tel"/>
+</div>
 <div class="field"><label for="oEmail">Email</label><input autocomplete="email" id="oEmail" required type="email"/></div>
+</div>
+
+<div class="field" id="verifyPhoneRow">
+<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+<button class="btn btn-line btn-small" id="verifyPhoneBtn" type="button">Verify phone</button>
+<span id="phoneVerifiedBadge" style="display:none;color:var(--sage);font-size:13px;font-weight:600">Verified ✓</span>
+</div>
+</div>
+<div class="field" id="phoneOtpSection" style="display:none">
+<label for="checkoutOtpCode">Verification code</label>
+<div style="display:flex;gap:8px;align-items:flex-start">
+<input autocomplete="one-time-code" id="checkoutOtpCode" inputmode="numeric" maxlength="6" placeholder="6-digit code" style="flex:1;min-width:0" type="text"/>
+<button class="btn btn-line btn-small" id="confirmPhoneOtpBtn" type="button">Confirm code</button>
+</div>
 </div>
 <div id="deliveryFields">
 <div class="field"><label for="oAddress">Delivery address</label><textarea autocomplete="street-address" id="oAddress" placeholder="House no., street, landmark" required></textarea></div>
@@ -631,7 +666,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify
 </div>
 <p class="field-hint">Your order confirmation is emailed to you, so please double-check the address above.</p>
 <div class="field"><label for="oNotes">Notes (optional)</label><textarea id="oNotes" placeholder="Colours, personalisation, delivery timing..."></textarea></div>
-<button class="btn btn-dark btn-block" id="submitOrderBtn" type="button">Place order</button>
+<button class="btn btn-dark btn-block" disabled id="submitOrderBtn" type="button">Place order</button>
 </div>
 <div class="drawer-view" id="viewConfirm">
 <div class="confirm-box">
@@ -933,6 +968,7 @@ var STUDIO_EMAIL = "miniatureworksstudio.in@gmail.com";
 
 var cart = [];
 var allOrdersCache = [];
+var checkoutPhoneVerified = false;
 
 function $(id){ return document.getElementById(id); }
 function val(id){ var el=$(id); return el ? el.value.trim() : ""; }
@@ -1315,7 +1351,92 @@ function showConfirmation(order){
   showView("confirm");
 }
 
+function setCheckoutPhoneVerified(verified){
+  checkoutPhoneVerified = verified;
+  $("submitOrderBtn").disabled = !verified;
+  $("phoneVerifiedBadge").style.display = verified ? "inline-block" : "none";
+  $("verifyPhoneBtn").style.display = verified ? "none" : "";
+}
+
+function resetCheckoutPhoneVerification(){
+  setCheckoutPhoneVerified(false);
+  $("phoneOtpSection").style.display = "none";
+  $("checkoutOtpCode").value = "";
+  $("verifyPhoneBtn").disabled = false;
+  $("confirmPhoneOtpBtn").disabled = false;
+}
+
+async function verifyCheckoutPhone(){
+  var phone = normPhone(val("oPhone"));
+  var email = val("oEmail");
+
+  if(phone.length < 10){
+    toast("Please enter a valid 10-digit phone number.");
+    return;
+  }
+  if(!validEmail(email)){
+    toast("Please enter a valid email address.");
+    return;
+  }
+
+  var button = $("verifyPhoneBtn");
+  button.disabled = true;
+  try{
+    var response = await fetch("/api/request-otp", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({phone:phone, email:email})
+    });
+    var result = {};
+    try{ result = await response.json(); }catch(e){}
+    if(!response.ok) throw new Error(result.error || "Could not send a verification code.");
+    $("phoneOtpSection").style.display = "block";
+    button.style.display = "none";
+    toast("A verification code was sent to your email.");
+  }catch(e){
+    toast(e.message || "Could not send a verification code.");
+    button.disabled = false;
+  }
+}
+
+async function confirmCheckoutOtp(){
+  var phone = normPhone(val("oPhone"));
+  var code = val("checkoutOtpCode");
+
+  if(phone.length < 10){
+    toast("Please enter a valid 10-digit phone number.");
+    return;
+  }
+  if(!/^\d{6}$/.test(code)){
+    toast("Please enter the 6-digit verification code.");
+    return;
+  }
+
+  var button = $("confirmPhoneOtpBtn");
+  button.disabled = true;
+  try{
+    var response = await fetch("/api/verify-otp", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({phone:phone, code:code, purpose:"checkout"})
+    });
+    var result = {};
+    try{ result = await response.json(); }catch(e){}
+    if(!response.ok) throw new Error(result.error || "Could not verify the code.");
+    $("phoneOtpSection").style.display = "none";
+    setCheckoutPhoneVerified(true);
+    toast("Phone verified.");
+  }catch(e){
+    toast(e.message || "Could not verify the code.");
+  }
+  button.disabled = false;
+}
+
 async function submitCatalogOrder(){
+  if(!checkoutPhoneVerified){
+    toast("Please verify your phone number first.");
+    return;
+  }
   var name=val("oName"), phone=normPhone(val("oPhone")), email=val("oEmail"),
       address=val("oAddress"), city=val("oCity"), pin=val("oPin"), notes=val("oNotes");
   var method = selectedDeliveryMethod();
@@ -1364,6 +1485,7 @@ async function submitCatalogOrder(){
   cart = [];
   saveCart();
   renderCart();
+  resetCheckoutPhoneVerification();
   showConfirmation(order);
 }
 
@@ -1540,6 +1662,47 @@ function foundOrdersHtml(orders){
       '</div>';
   }).join("");
   return '<p class="field-hint">Orders found for that phone number — tap one to check its status:</p>' + rows;
+}
+
+async function requestOtp(){
+  var phone = normPhone(val("myOrdersPhone"));
+  if(phone.length<10){
+    toast("Enter a valid 10-digit phone number.");
+    return;
+  }
+  try{
+    var response = await fetch("/api/request-otp", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({phone:phone})
+    });
+    var result = {};
+    try{ result = await response.json(); }catch(e){}
+    if(!response.ok) throw new Error(result.error || "Could not send a code — please try again.");
+    $("requestOtpBtn").style.display = "none";
+    $("myOrdersCode").style.display = "";
+    $("verifyOtpBtn").style.display = "";
+    toast("A code was sent — check your email.");
+  }catch(e){ toast(e.message || "Could not send a code — please try again."); }
+}
+async function verifyOtp(){
+  var phone = normPhone(val("myOrdersPhone")), code = val("myOrdersCode");
+  var results = $("myOrdersResults");
+  try{
+    var response = await fetch("/api/verify-otp", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({phone:phone, code:code})
+    });
+    var result = {};
+    try{ result = await response.json(); }catch(e){}
+    if(!response.ok) throw new Error(result.error || "Could not verify that code — please try again.");
+    if(!result.orders || !result.orders.length){
+      results.innerHTML = '<p class="track-empty">No orders found for this phone number.</p>';
+    } else {
+      results.innerHTML = '<h3>Your Orders</h3>' + result.orders.map(orderCardHtml).join("");
+    }
+  }catch(e){ toast(e.message || "Could not verify that code — please try again."); }
 }
 
 /* ---------------- admin ---------------- */
@@ -1759,6 +1922,10 @@ function init(){
   });
   $("submitOrderBtn").addEventListener("click", submitCatalogOrder);
   $("oPin").addEventListener("blur", updateDeliveryNote);
+  $("verifyPhoneBtn").addEventListener("click", verifyCheckoutPhone);
+  $("confirmPhoneOtpBtn").addEventListener("click", confirmCheckoutOtp);
+  $("oPhone").addEventListener("input", resetCheckoutPhoneVerification);
+  $("oEmail").addEventListener("input", resetCheckoutPhoneVerification);
 
   document.querySelectorAll('input[name="deliveryMethod"]').forEach(function(inp){
     inp.addEventListener("change", applyDeliveryMethod);
@@ -1818,6 +1985,9 @@ function init(){
     }
   });
   $("forgotIdBtn").addEventListener("click", findOrders);
+
+  $("requestOtpBtn").addEventListener("click", requestOtp);
+  $("verifyOtpBtn").addEventListener("click", verifyOtp);
 
   $("adminOpenBtn").addEventListener("click", function(){ $("adminOverlay").classList.add("open"); });
   $("adminCloseBtn").addEventListener("click", function(){ $("adminOverlay").classList.remove("open"); });

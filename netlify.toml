@@ -37,6 +37,16 @@
   to = "/.netlify/functions/reviews"
   status = 200
 
+[[redirects]]
+  from = "/api/request-otp"
+  to = "/.netlify/functions/request-otp"
+  status = 200
+
+[[redirects]]
+  from = "/api/verify-otp"
+  to = "/.netlify/functions/verify-otp"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
