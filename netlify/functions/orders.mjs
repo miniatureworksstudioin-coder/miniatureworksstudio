@@ -2,7 +2,7 @@ import { json, orderStore, parseBody, cleanOrder, validateOrder } from "./_share
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
-const SITE_URL = process.env.URL || "https://miniatureworksstudio.netlify.app";
+const SITE_URL = "https://miniatureworksstudio.netlify.app";
 const DEFAULT_DELIVERY_CHARGE = 100;
 
 const formatINR = (value) =>
@@ -79,11 +79,7 @@ function buildOrderEmailHtml(order) {
           const name = item.name ?? item.title ?? "Item";
           const qty = item.quantity ?? item.qty ?? 1;
           const price = item.price ?? item.unitPrice ?? "";
-          const imagePath = String(item.img || "");
-          const imageUrl = /^https?:\/\//i.test(imagePath)
-            ? imagePath
-            : `https://miniatureworksstudio.netlify.app${imagePath}`;
-
+         const imageUrl = absoluteImageUrl(item.img);
           const image = item.img
             ? `<img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(
                 String(name)
