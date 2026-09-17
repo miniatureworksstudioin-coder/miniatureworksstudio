@@ -2,7 +2,7 @@ import { json, orderStore, parseBody, cleanOrder, validateOrder } from "./_share
 
 const RESEND_API_URL = "https://api.resend.com/emails";
 
-const SITE_URL = "https://miniatureworksstudio.netlify.app";
+const SITE_URL = process.env.URL || "https://miniatureworksstudio.netlify.app";
 const DEFAULT_DELIVERY_CHARGE = 100;
 
 const formatINR = (value) =>
