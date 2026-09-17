@@ -10,7 +10,11 @@ const formatINR = (value) =>
 
 // Item images are stored as site-relative paths; email clients need absolute ones.
 const absoluteImageUrl = (path) => {
-  const imagePath = String(path || "");
+  let imagePath = String(path || "");
+  // Replace localhost URLs with the real domain
+  if (/^https?:\/\/localhost(:\d+)?\//i.test(imagePath)) {
+    imagePath = imagePath.replace(/^https?:\/\/localhost(:\d+)?/i, SITE_URL);
+  }
   return /^https?:\/\//i.test(imagePath) ? imagePath : `${SITE_URL}${imagePath}`;
 };
 
