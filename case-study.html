@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Miniature Works Studio — a case study by Aakash</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#F3EEE3; --paper-deep:#E7DFCC; --cream:#FBF8F0;
+  --ink:#1E1B16; --ink-soft:#6B6153;
+  --walnut:#211C15; --walnut-deep:#15120D;
+  --brass:#A9793F; --brass-soft:#C9A66C;
+  --blueprint:#2F4A5C; --blueprint-soft:#4C6B80;
+  --rust:#9C4A2E;
+  --line:rgba(30,27,22,.14); --line-dark:rgba(251,248,240,.16);
+  --serif:'Fraunces',Georgia,serif; --sans:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --radius:8px;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  background-image:linear-gradient(rgba(128,120,100,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(128,120,100,.05) 1px,transparent 1px);
+  background-size:26px 26px;
+}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+.prose{max-width:38rem}
+a{color:inherit}
+h1,h2,h3{font-family:var(--serif);font-weight:500;letter-spacing:-.01em}
+.eyebrow{font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);letter-spacing:.02em;margin-bottom:10px}
+.rule{border:0;border-top:1px solid var(--line);margin:0}
+section{padding:64px 0}
+@media(min-width:860px){section{padding:96px 0}}
+
+/* ---------- NAV ---------- */
+.nav{position:sticky;top:0;z-index:50;background:color-mix(in srgb, var(--paper) 88%, transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;height:58px}
+.brand{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);text-decoration:none;display:flex;align-items:center;gap:8px}
+.brand b{color:var(--ink);font-weight:600}
+.brand .dot{width:6px;height:6px;border-radius:50%;background:var(--rust)}
+.nav-cta{font-family:var(--sans);font-size:13px;font-weight:600;color:var(--ink);text-decoration:none;border:1px solid var(--line);border-radius:99px;padding:8px 16px;display:flex;align-items:center;gap:6px;transition:border-color .2s,background .2s}
+.nav-cta:hover{border-color:var(--brass);background:var(--cream)}
+
+/* ---------- HERO ---------- */
+.hero{padding:56px 0 0}
+.hero .wrap{display:grid;gap:40px}
+.hero h1{font-size:clamp(34px,6vw,58px);line-height:1.04;margin:14px 0 18px}
+.hero .lede{font-size:17px;color:var(--ink-soft);max-width:34rem}
+.role-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chip{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:99px;padding:6px 12px;color:var(--ink-soft)}
+
+/* interactive demo card — hero moment */
+.demo-wrap{margin-top:44px;display:flex;justify-content:center}
+.demo-card{width:100%;max-width:300px;background:var(--cream);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.demo-figure{aspect-ratio:1/1;background:linear-gradient(155deg,var(--walnut) 0%,#3a2f22 55%,var(--brass) 130%);display:grid;place-items:center;position:relative}
+.demo-figure svg{width:56%;height:56%;stroke:var(--cream);fill:none;stroke-width:1.3;opacity:.92}
+.demo-tag{position:absolute;top:9px;left:9px;font-family:var(--mono);font-size:10px;color:var(--cream);background:rgba(21,18,13,.55);padding:3px 7px;border-radius:4px}
+.demo-body{padding:14px 15px 16px}
+.demo-name{font-weight:600;font-size:14.5px}
+.demo-made{display:block;font-family:var(--mono);font-size:9.5px;color:#5B7A5B;margin-top:7px}
+.demo-sizes{display:flex;gap:6px;margin:9px 0}
+.demo-size{flex:1;border:1px solid var(--line);background:var(--paper);border-radius:6px;padding:7px 3px;font-family:var(--mono);font-size:10px;color:var(--ink);cursor:pointer;text-align:center;line-height:1.3}
+.demo-size span{display:block;font-size:9px;color:var(--ink-soft);margin-top:2px}
+.demo-size.active{background:var(--walnut);border-color:var(--walnut);color:var(--cream)}
+.demo-size.active span{color:var(--brass-soft)}
+.demo-price{font-family:var(--mono);font-size:13px;font-weight:600;margin-bottom:10px}
+.demo-add{width:100%;border:0;border-radius:6px;background:var(--walnut);color:var(--cream);font-family:var(--sans);font-size:12.5px;font-weight:600;padding:10px 8px;cursor:pointer;transition:background .2s}
+.demo-add.added{background:#5B7A5B}
+.demo-caption{text-align:center;font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);margin-top:12px}
+
+/* ---------- SPEC PLATE ---------- */
+.spec-plate{background:#211C15;color:#FAF6EC}
+.spec-plate .wrap{padding:34px 24px}
+.spec-grid{display:grid;grid-template-columns:1fr;gap:22px}
+.spec-item .k{font-family:var(--mono);font-size:10.5px;color:rgba(251,248,240,.5);margin-bottom:5px}
+.spec-item .v{font-size:15px;font-weight:500;color:#FAF6EC}
+.spec-item .v a{color:var(--brass-soft);text-decoration:underline}
+@media(min-width:760px){@media(min-width:760px){.spec-grid{grid-template-columns:repeat(5,1fr);gap:18px}}}
+
+/* ---------- BRIEF / TWO COL WITH RAIL ---------- */
+.split{display:grid;gap:36px}
+.rail{font-family:var(--mono);font-size:11px;color:var(--ink-soft);border-left:2px solid var(--line);padding-left:16px;height:fit-content}
+.rail div{padding:6px 0}
+.rail b{color:var(--ink);font-family:var(--sans);font-weight:600;display:block;font-size:13px;margin-bottom:2px}
+@media(min-width:860px){.split{grid-template-columns:200px 1fr;gap:56px}}
+.prose p{margin-bottom:16px;color:var(--ink-soft);font-size:15.5px}
+.prose p:last-child{margin-bottom:0}
+h2{font-size:clamp(24px,3.4vw,32px);margin-bottom:18px}
+
+/* ---------- DESIGN SYSTEM ---------- */
+.swatch-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:22px}
+.swatch{border-radius:6px;padding:14px;min-height:88px;display:flex;flex-direction:column;justify-content:flex-end;border:1px solid var(--line)}
+.swatch .name{font-family:var(--mono);font-size:10.5px}
+.swatch .hex{font-family:var(--mono);font-size:9.5px;opacity:.75;margin-top:2px}
+@media(min-width:640px){.swatch-row{grid-template-columns:repeat(4,1fr)}}
+.type-specimen{margin-top:36px;border-top:1px solid var(--line);padding-top:28px}
+.spec-line{display:flex;align-items:baseline;gap:16px;padding:14px 0;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.spec-line .role{font-family:var(--mono);font-size:10.5px;color:var(--ink-soft);width:100%;max-width:9rem}
+.spec-line .sample{flex:1;min-width:200px}
+.sample-serif{font-family:var(--serif);font-size:26px}
+.sample-sans{font-family:var(--sans);font-size:16px;font-weight:500}
+.sample-mono{font-family:var(--mono);font-size:13px}
+
+/* ---------- FEATURES ---------- */
+.feat-grid{display:grid;grid-template-columns:1fr;gap:1px;background:var(--line);border:1px solid var(--line);margin-top:28px;border-radius:var(--radius);overflow:hidden}
+.feat{background:var(--paper);padding:22px}
+.feat .num{font-family:var(--mono);font-size:10.5px;color:var(--brass);margin-bottom:8px}
+.feat h3{font-family:var(--sans);font-weight:600;font-size:15px;margin-bottom:7px}
+.feat p{font-size:13.5px;color:var(--ink-soft)}
+@media(min-width:640px){.feat-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:980px){.feat-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* ---------- ARCHITECTURE ---------- */
+.arch{background:var(--paper-deep)}
+.arch-diagram{margin-top:30px;display:flex;flex-direction:column;gap:0;max-width:560px}
+.arch-box{border:1px solid var(--blueprint);border-radius:6px;padding:14px 16px;background:var(--cream)}
+.arch-box .t{font-family:var(--mono);font-size:11px;color:var(--blueprint);margin-bottom:4px}
+.arch-box .d{font-size:13.5px;color:var(--ink-soft)}
+.arch-arrow{display:flex;align-items:center;gap:8px;padding:8px 0 8px 16px;font-family:var(--mono);font-size:10.5px;color:var(--ink-soft)}
+.arch-arrow svg{width:12px;height:12px;stroke:var(--ink-soft);fill:none;stroke-width:1.5}
+.endpoint-list{margin-top:30px;border-top:1px solid var(--line)}
+.ep-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px;align-items:baseline}
+.ep-method{color:var(--blueprint);font-weight:600;flex:0 0 3.2rem}
+.ep-path{color:var(--ink)}
+.ep-desc{color:var(--ink-soft);font-family:var(--sans);font-size:13px;margin-left:auto;text-align:right}
+
+/* ---------- DETAILS ---------- */
+.detail-grid{display:grid;grid-template-columns:1fr;gap:24px;margin-top:28px}
+.detail h3{font-family:var(--sans);font-weight:600;font-size:14.5px;margin-bottom:6px}
+.detail p{font-size:13.5px;color:var(--ink-soft)}
+@media(min-width:760px){.detail-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* ---------- OUTCOME / LEDGER ---------- */
+.ledger{display:grid;grid-template-columns:1fr;gap:18px;margin-top:28px;border-top:1px solid var(--line);padding-top:26px}
+.ledger-row{display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid var(--line);padding-bottom:14px}
+.ledger-row .l{font-size:14px;color:var(--ink-soft)}
+.ledger-row .n{font-family:var(--serif);font-size:26px}
+@media(min-width:760px){.ledger{grid-template-columns:repeat(4,1fr)}.ledger-row{flex-direction:column;gap:6px;border-bottom:0}}
+
+/* ---------- CTA ---------- */
+.cta{background:#211C15;color:#FAF6EC;text-align:left}
+.cta h2{color:#FAF6EC}
+.cta p{color:rgba(251,248,240,.7);margin-bottom:24px;max-width:32rem}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--sans);font-weight:600;font-size:14px;border-radius:99px;padding:13px 24px;text-decoration:none;border:1px solid transparent}
+.btn-brass{background:#C9A66C;color:#15120D}
+.btn-line{border-color:rgba(251,248,240,.3);color:#FAF6EC}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px}
+
+footer{padding:28px 0;font-size:12.5px;color:var(--ink-soft)}
+footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+<div class="wrap">
+<a class="brand" href="#top"><span class="dot"></span>Case study <b>· Aakash</b></a>
+<a class="nav-cta" href="https://miniatureworksstudio.netlify.app/" target="_blank" rel="noopener">Visit live site ↗</a>
+</div>
+</nav>
+
+<header class="hero" id="top">
+<div class="wrap">
+<p class="eyebrow">Case study — Miniature Works Studio</p>
+<h1>Selling handmade,<br/>one piece at a time.</h1>
+<p class="lede">A made-to-order storefront for a miniature furniture and model-making studio — designed and built end to end, from the type system down to the order-tracking API.</p>
+<div class="role-row">
+<span class="chip">Design + development</span>
+<span class="chip">Solo, 2026</span>
+<span class="chip">Vanilla HTML/CSS/JS</span>
+<span class="chip">Netlify Functions</span>
+<span class="chip">Supabase</span>
+</div>
+
+<div class="demo-wrap">
+<div class="demo-card">
+<div class="demo-figure">
+<span class="demo-tag">Live component</span>
+<img src="images/ornamental-hand-mirror.webp" alt="Ornamental Hand Mirror" style="width:100%;height:100%;object-fit:cover"/>
+</div>
+<div class="demo-body">
+<div class="demo-name">Ornamental Hand Mirror</div>
+<span class="demo-made">MADE TO ORDER</span>
+<div class="demo-sizes" id="demoSizes">
+<button class="demo-size active" data-price="800">S<span>&#8377;800</span></button>
+<button class="demo-size" data-price="1400">M<span>&#8377;1400</span></button>
+<button class="demo-size" data-price="2200">L<span>&#8377;2200</span></button>
+</div>
+<div class="demo-price" id="demoPrice">&#8377;800</div>
+<button class="demo-add" id="demoAdd">Add to order</button>
+</div>
+</div>
+</div>
+<p class="demo-caption">↑ real pricing logic from the shop, rebuilt here — try a size</p>
+</div>
+</header>
+
+<section class="spec-plate">
+<div class="wrap">
+<div class="spec-grid">
+<div class="spec-item"><div class="k">ROLE</div><div class="v">Designer &amp; developer</div></div>
+<div class="spec-item"><div class="k">SCOPE</div><div class="v">UI/UX, frontend, backend, deploy</div></div>
+<div class="spec-item"><div class="k">STACK</div><div class="v">HTML/CSS/JS, Netlify, Supabase</div></div>
+<div class="spec-item"><div class="k">DATA + EMAIL</div><div class="v">Netlify Blobs &middot; Brevo API</div></div>
+<div class="spec-item"><div class="k">LIVE AT</div><div class="v"><a href="https://miniatureworksstudio.netlify.app/" target="_blank" rel="noopener">miniatureworksstudio.netlify.app</a></div></div>
+</div>
+</div>
+</section>
+
+<section id="brief">
+<div class="wrap split">
+<div class="rail">
+<div><b>The client</b>A working miniature-art studio, freelance since 2020</div>
+<div><b>The constraint</b>Every piece is one-off — nothing sits in stock</div>
+<div><b>The ask</b>A shop that never pretends to have inventory it doesn't</div>
+</div>
+<div class="prose">
+<p class="eyebrow">The brief</p>
+<h2>A shop that can't oversell what hasn't been built yet</h2>
+<p>Miniature Works Studio hand-builds furniture miniatures, architectural models and one-off commissions — dioramas, hand mirrors, dollhouse furniture, prototypes. Nothing is mass-produced, and nothing is kept on a shelf: every order is built after it's placed, usually over 10–15 working days.</p>
+<p>That rules out a standard e-commerce template. There's no fixed catalogue, no stock counter, no single price per item — a hand mirror in Small is a different build, and a different price, from the same design in Large. The site needed to sell a <em>process</em>, not a warehouse.</p>
+<p>It also needed to run a whole small business on its own: take custom commissions with reference photos, let customers check on an order without creating an account, collect reviews without letting anyone post directly, and give the studio a way to manage all of it without a spreadsheet.</p>
+</div>
+</div>
+</section>
+
+<hr class="rule"/>
+
+<section id="design-system">
+<div class="wrap">
+<p class="eyebrow">Design system</p>
+<h2>A palette borrowed from the workshop itself</h2>
+<p style="color:var(--ink-soft);font-size:15.5px;max-width:38rem">Every piece the studio makes starts as pale MDF and darkens through a hardening process — no paint, no stain. The site's palette follows the same logic: paper, walnut and brass, nothing added that isn't structural.</p>
+<div class="swatch-row">
+<div class="swatch" style="background:#ECE5D3;color:#201B14"><div class="name">Paper</div><div class="hex">#ECE5D3</div></div>
+<div class="swatch" style="background:#211C15;color:#FAF6EC"><div class="name">Walnut</div><div class="hex">#211C15</div></div>
+<div class="swatch" style="background:#A9793F;color:#FAF6EC"><div class="name">Brass</div><div class="hex">#A9793F</div></div>
+<div class="swatch" style="background:#3C5568;color:#FAF6EC"><div class="name">Ledger blue</div><div class="hex">#3C5568</div></div>
+</div>
+<div class="type-specimen">
+<div class="spec-line"><span class="role">Display — Fraunces</span><span class="sample sample-serif">Built to true scale</span></div>
+<div class="spec-line"><span class="role">UI — IBM Plex Sans</span><span class="sample sample-sans">Add to order · Track your order</span></div>
+<div class="spec-line"><span class="role">Data — IBM Plex Mono</span><span class="sample sample-mono">MWS-260913-1234 · ₹1,400</span></div>
+</div>
+</div>
+</section>
+
+<hr class="rule"/>
+
+<section id="features">
+<div class="wrap">
+<p class="eyebrow">What it does</p>
+<h2>Nine problems, one page</h2>
+<p style="color:var(--ink-soft);font-size:15.5px;max-width:38rem">Rather than a shop plus a separate booking form plus a separate FAQ, everything lives in one continuously scrolling site — each section solving one specific part of running a made-to-order business.</p>
+<div class="feat-grid">
+<div class="feat"><div class="num">01</div><h3>Sized, not stocked</h3><p>Every piece shows Small / Medium / Large pricing plus a Custom/XL quote path — no unit is ever marked "in stock."</p></div>
+<div class="feat"><div class="num">02</div><h3>Order drawer</h3><p>A slide-in cart with a quantity stepper and a choice between paid home delivery or free local pickup at the studio.</p></div>
+<div class="feat"><div class="num">03</div><h3>Custom commissions</h3><p>A dedicated form for one-off briefs, with reference-photo upload and approximate size, separate from the fixed catalogue.</p></div>
+<div class="feat"><div class="num">04</div><h3>OTP-verified checkout</h3><p>A customer must prove they own their phone number — via a code sent to their email — before an order can be placed. The same one-time code later unlocks order tracking and full order history, with no account required.</p></div>
+<div class="feat"><div class="num">05</div><h3>Moderated reviews</h3><p>Star ratings and comments are submitted publicly but held back until the studio approves them.</p></div>
+<div class="feat"><div class="num">06</div><h3>Studio dashboard</h3><p>A sign-in-gated admin view for moving orders through confirmed → in progress → ready → completed, and approving reviews.</p></div>
+<div class="feat"><div class="num">07</div><h3>Zoomable gallery</h3><p>A lightbox with per-piece extra shots, swiped through without leaving the page.</p></div>
+<div class="feat"><div class="num">08</div><h3>Structured data</h3><p>Every piece is marked up as a schema.org Product with size-based offers, so search engines see real pricing.</p></div>
+<div class="feat"><div class="num">09</div><h3>Printable receipts</h3><p>A dedicated print stylesheet strips the nav, drawer and modals so a confirmation prints cleanly on paper.</p></div>
+</div>
+</div>
+</section>
+
+<section class="arch" id="architecture">
+<div class="wrap">
+<p class="eyebrow">Under the hood</p>
+<h2>No framework, no accounts, still stateful</h2>
+<p style="color:var(--ink-soft);font-size:15.5px;max-width:38rem">The front end is plain HTML, CSS and JavaScript — no build step. Orders, custom requests and reviews are handled by serverless functions backed by Netlify Blobs and Supabase, and order tracking runs entirely on one-time codes instead of a login system.</p>
+
+<div class="arch-diagram">
+<div class="arch-box"><div class="t">CLIENT</div><div class="d">Static HTML/CSS/JS — no framework, no build step</div></div>
+<div class="arch-arrow"><svg viewBox="0 0 24 24"><path d="M12 4v16M6 14l6 6 6-6"/></svg>fetch('/api/...')</div>
+<div class="arch-box"><div class="t">SERVERLESS FUNCTIONS</div><div class="d">Netlify Functions — orders, OTP issue/verify, admin auth, reviews</div></div>
+<div class="arch-arrow"><svg viewBox="0 0 24 24"><path d="M12 4v16M6 14l6 6 6-6"/></svg>reads / writes</div>
+<div class="arch-box"><div class="t">DATA — CATALOG</div><div class="d">Supabase (product catalog)</div></div>
+<div class="arch-box"><div class="t">DATA — OPERATIONS</div><div class="d">Netlify Blobs (orders, OTPs, reviews)</div></div>
+</div>
+
+<div class="endpoint-list">
+<div class="ep-row"><span class="ep-method">POST</span><span class="ep-path">/api/orders</span><span class="ep-desc">place a catalog or custom order</span></div>
+<div class="ep-row"><span class="ep-method">POST</span><span class="ep-path">/api/order-status</span><span class="ep-desc">look up an order by ID + phone</span></div>
+<div class="ep-row"><span class="ep-method">POST</span><span class="ep-path">/api/find-orders</span><span class="ep-desc">list all orders for a phone</span></div>
+<div class="ep-row"><span class="ep-method">POST</span><span class="ep-path">/api/cancel-order</span><span class="ep-desc">free cancellation within 24h</span></div>
+<div class="ep-row"><span class="ep-method">POST</span><span class="ep-path">/api/request-otp</span><span class="ep-desc">send an OTP (checkout or My Orders)</span></div>
+<div class="ep-row"><span class="ep-method">POST</span><span class="ep-path">/api/verify-otp</span><span class="ep-desc">verify an OTP code</span></div>
+<div class="ep-row"><span class="ep-method">POST</span><span class="ep-path">/api/admin/login</span><span class="ep-desc">PIN → HMAC-signed token</span></div>
+<div class="ep-row"><span class="ep-method">GET</span><span class="ep-path">/api/admin/orders</span><span class="ep-desc">list all orders for the studio</span></div>
+<div class="ep-row"><span class="ep-method">PUT</span><span class="ep-path">/api/admin/orders</span><span class="ep-desc">update an order's status</span></div>
+<div class="ep-row"><span class="ep-method">POST</span><span class="ep-path">/api/reviews</span><span class="ep-desc">submit a review (pending approval)</span></div>
+<div class="ep-row"><span class="ep-method">GET</span><span class="ep-path">/api/reviews</span><span class="ep-desc">fetch approved reviews</span></div>
+<div class="ep-row"><span class="ep-method">DELETE</span><span class="ep-path">/api/reviews</span><span class="ep-desc">delete a review</span></div>
+</div>
+</div>
+</section>
+
+<section id="details">
+<div class="wrap">
+<p class="eyebrow">Small decisions</p>
+<h2>The details that don't show up in a feature list</h2>
+<div class="detail-grid">
+<div class="detail"><h3>One orchestrated entrance</h3><p>The homepage plays a single load-in sequence — headline, then image, then corner marks. Every other transition only fires in response to something the visitor does.</p></div>
+<div class="detail"><h3>Reduced motion, respected</h3><p>Every animated element collapses to an instant, static state under <code>prefers-reduced-motion</code> — including the lightbox and the order drawer.</p></div>
+<div class="detail"><h3>Readable order IDs</h3><p>Orders are stamped as <code>MWS-YYMMDD-####</code> — a customer can tell how old an order is just by reading the ID back over the phone.</p></div>
+<div class="detail"><h3>A named pickup point</h3><p>Local pickup names the actual studio location near Modinagar North RRTS station, instead of a generic "select a store" step.</p></div>
+<div class="detail"><h3>Real starting prices</h3><p>Every size tier's price was set from the studio's own materials and build-time costs, not placeholder numbers, before the catalogue went live.</p></div>
+<div class="detail"><h3>Print as a real output</h3><p>An order confirmation is expected to be printed and kept — so the print stylesheet is treated as its own layout, not an afterthought.</p></div>
+</div>
+</div>
+</section>
+
+<hr class="rule"/>
+<section id="screens">
+<div class="wrap">
+<p class="eyebrow">Screens</p>
+<h2>The interface</h2>
+<p style="color:var(--ink-soft);font-size:15.5px;max-width:38rem">The key pages customers see. Every screen is responsive and matches the studio's paper-and-brass palette.</p>
+<div style="display:grid;gap:32px;margin-top:32px">
+  <div>
+    <img src="images/portfolio-shop.png" alt="Shop the collection" style="width:100%;border:1px solid var(--line);border-radius:8px;display:block"/>
+    <p style="font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:10px">Shop — dynamic catalog from Supabase with S/M/L size options</p>
+  </div>
+  <div>
+    <img src="images/portfolio-checkout.png" alt="Checkout drawer" style="width:100%;border:1px solid var(--line);border-radius:8px;display:block"/>
+    <p style="font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:10px">Checkout — OTP phone verification before order submission</p>
+  </div>
+  <div>
+    <img src="images/portfolio-admin.png" alt="Admin dashboard" style="width:100%;border:1px solid var(--line);border-radius:8px;display:block"/>
+    <p style="font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:10px">Admin dashboard — order management with live status updates</p>
+  </div>
+  <div>
+    <img src="images/portfolio-mobile.png" alt="Mobile view" style="width:100%;max-width:340px;border:1px solid var(--line);border-radius:8px;display:block"/>
+    <p style="font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:10px">Mobile — the same site on a phone</p>
+  </div>
+</div>
+</div>
+</section>
+
+<section id="outcome">
+<div class="wrap">
+<p class="eyebrow">Where it stands</p>
+<h2>A live studio, not a demo</h2>
+<p style="color:var(--ink-soft);font-size:15.5px;max-width:38rem">This is Aakash's own practice — he's been taking commissions since August 2020, and the site now runs that business day to day: every order, custom brief and review on it is real.</p>
+<div class="ledger">
+<div class="ledger-row"><span class="l">Custom projects delivered</span><span class="n">300+</span></div>
+<div class="ledger-row"><span class="l">Client satisfaction rate</span><span class="n">98%</span></div>
+<div class="ledger-row"><span class="l">Growth in repeat clients</span><span class="n">90%</span></div>
+<div class="ledger-row"><span class="l">Timeline</span><span class="n">June 2026 – Present</span></div>
+</div>
+</div>
+</section>
+
+<section class="cta">
+<div class="wrap">
+<p class="eyebrow" style="color:rgba(251,248,240,.5)">Get in touch</p>
+<h2>See it running, or start a project</h2>
+<p>The full site is live, with real orders moving through it — the best way to see the work is to open it.</p>
+<div class="cta-row">
+<a class="btn btn-brass" href="https://miniatureworksstudio.netlify.app/" target="_blank" rel="noopener">Visit Miniature Works Studio ↗</a>
+<a class="btn btn-line" href="https://github.com/miniatureworksstudioin-coder/miniatureworksstudio" target="_blank" rel="noopener">View source ↗</a>
+<a class="btn btn-line" href="mailto:miniatureworksstudio.in@gmail.com">Email Aakash</a>
+</div>
+</div>
+</section>
+
+<footer>
+<div class="wrap">
+<span>Case study by Aakash — design &amp; development</span>
+<span>Miniature Works Studio, Ghaziabad</span>
+</div>
+</footer>
+
+<script>
+(function(){
+  var buttons = document.querySelectorAll('.demo-size');
+  var priceEl = document.getElementById('demoPrice');
+  var addBtn = document.getElementById('demoAdd');
+  buttons.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      buttons.forEach(function(b){ b.classList.remove('active'); });
+      btn.classList.add('active');
+      priceEl.textContent = '\u20B9' + btn.getAttribute('data-price');
+      addBtn.classList.remove('added');
+      addBtn.textContent = 'Add to order';
+    });
+  });
+  addBtn.addEventListener('click', function(){
+    addBtn.classList.add('added');
+    addBtn.textContent = 'Added ✓';
+    setTimeout(function(){
+      addBtn.classList.remove('added');
+      addBtn.textContent = 'Add to order';
+    }, 1400);
+  });
+})();
+</script>
+</body>
+</html>
