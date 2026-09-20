@@ -54,7 +54,13 @@ section{padding:64px 0}
 .chip{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:99px;padding:6px 12px;color:var(--ink-soft)}
 
 /* interactive demo card — hero moment */
-.demo-wrap{margin-top:44px;display:flex;justify-content:center}
+.demo-wrap{margin-top:44px;display:flex;flex-direction:column;align-items:center}
+@media(min-width:900px){
+  .hero{padding:72px 0 0}
+  .hero .wrap{grid-template-columns:1.15fr 380px;align-items:center;gap:64px}
+  .hero-text{max-width:32rem}
+  .demo-wrap{margin-top:0;align-items:flex-start;min-width:0}
+}
 .demo-card{width:100%;max-width:300px;background:var(--cream);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
 .demo-figure{aspect-ratio:1/1;background:linear-gradient(155deg,var(--walnut) 0%,#3a2f22 55%,var(--brass) 130%);display:grid;place-items:center;position:relative}
 .demo-figure svg{width:56%;height:56%;stroke:var(--cream);fill:none;stroke-width:1.3;opacity:.92}
@@ -79,7 +85,7 @@ section{padding:64px 0}
 .spec-item .k{font-family:var(--mono);font-size:10.5px;color:rgba(251,248,240,.5);margin-bottom:5px}
 .spec-item .v{font-size:15px;font-weight:500;color:#FAF6EC}
 .spec-item .v a{color:var(--brass-soft);text-decoration:underline}
-@media(min-width:760px){@media(min-width:760px){.spec-grid{grid-template-columns:repeat(5,1fr);gap:18px}}}
+@media(min-width:760px){.spec-grid{grid-template-columns:repeat(5,1fr);gap:18px}}
 
 /* ---------- BRIEF / TWO COL WITH RAIL ---------- */
 .split{display:grid;gap:36px}
@@ -116,13 +122,18 @@ h2{font-size:clamp(24px,3.4vw,32px);margin-bottom:18px}
 
 /* ---------- ARCHITECTURE ---------- */
 .arch{background:var(--paper-deep)}
-.arch-diagram{margin-top:30px;display:flex;flex-direction:column;gap:0;max-width:560px}
+.arch-columns{margin-top:30px;display:grid;gap:36px}
+.arch-diagram{display:flex;flex-direction:column;gap:0}
 .arch-box{border:1px solid var(--blueprint);border-radius:6px;padding:14px 16px;background:var(--cream)}
 .arch-box .t{font-family:var(--mono);font-size:11px;color:var(--blueprint);margin-bottom:4px}
 .arch-box .d{font-size:13.5px;color:var(--ink-soft)}
 .arch-arrow{display:flex;align-items:center;gap:8px;padding:8px 0 8px 16px;font-family:var(--mono);font-size:10.5px;color:var(--ink-soft)}
 .arch-arrow svg{width:12px;height:12px;stroke:var(--ink-soft);fill:none;stroke-width:1.5}
-.endpoint-list{margin-top:30px;border-top:1px solid var(--line)}
+.endpoint-list{border-top:1px solid var(--line)}
+@media(min-width:900px){
+  .arch-columns{grid-template-columns:1fr 1fr;align-items:start}
+  .endpoint-list{border-top:0;border-left:1px solid var(--line);padding-left:32px}
+}
 .ep-row{display:flex;gap:12px;padding:10px 0;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:12px;align-items:baseline}
 .ep-method{color:var(--blueprint);font-weight:600;flex:0 0 3.2rem}
 .ep-path{color:var(--ink)}
@@ -167,6 +178,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
 
 <header class="hero" id="top">
 <div class="wrap">
+<div class="hero-text">
 <p class="eyebrow">Case study — Miniature Works Studio</p>
 <h1>Selling handmade,<br/>one piece at a time.</h1>
 <p class="lede">A made-to-order storefront for a miniature furniture and model-making studio — designed and built end to end, from the type system down to the order-tracking API.</p>
@@ -176,6 +188,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
 <span class="chip">Vanilla HTML/CSS/JS</span>
 <span class="chip">Netlify Functions</span>
 <span class="chip">Supabase</span>
+</div>
 </div>
 
 <div class="demo-wrap">
@@ -196,8 +209,8 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
 <button class="demo-add" id="demoAdd">Add to order</button>
 </div>
 </div>
-</div>
 <p class="demo-caption">↑ real pricing logic from the shop, rebuilt here — try a size</p>
+</div>
 </div>
 </header>
 
@@ -278,6 +291,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
 <h2>No framework, no accounts, still stateful</h2>
 <p style="color:var(--ink-soft);font-size:15.5px;max-width:38rem">The front end is plain HTML, CSS and JavaScript — no build step. Orders, custom requests and reviews are handled by serverless functions backed by Netlify Blobs and Supabase, and order tracking runs entirely on one-time codes instead of a login system.</p>
 
+<div class="arch-columns">
 <div class="arch-diagram">
 <div class="arch-box"><div class="t">CLIENT</div><div class="d">Static HTML/CSS/JS — no framework, no build step</div></div>
 <div class="arch-arrow"><svg viewBox="0 0 24 24"><path d="M12 4v16M6 14l6 6 6-6"/></svg>fetch('/api/...')</div>
@@ -300,6 +314,7 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
 <div class="ep-row"><span class="ep-method">POST</span><span class="ep-path">/api/reviews</span><span class="ep-desc">submit a review (pending approval)</span></div>
 <div class="ep-row"><span class="ep-method">GET</span><span class="ep-path">/api/reviews</span><span class="ep-desc">fetch approved reviews</span></div>
 <div class="ep-row"><span class="ep-method">DELETE</span><span class="ep-path">/api/reviews</span><span class="ep-desc">delete a review</span></div>
+</div>
 </div>
 </div>
 </section>
@@ -338,8 +353,8 @@ footer .wrap{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px}
     <img src="images/portfolio-admin.png" alt="Admin dashboard" style="width:100%;border:1px solid var(--line);border-radius:8px;display:block"/>
     <p style="font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:10px">Admin dashboard — order management with live status updates</p>
   </div>
-  <div>
-    <img src="images/portfolio-mobile.png" alt="Mobile view" style="width:100%;max-width:340px;border:1px solid var(--line);border-radius:8px;display:block"/>
+  <div style="text-align:center">
+    <img src="images/portfolio-mobile.png" alt="Mobile view" style="width:100%;max-width:340px;border:1px solid var(--line);border-radius:8px;display:block;margin:0 auto"/>
     <p style="font-family:var(--mono);font-size:11.5px;color:var(--ink-soft);margin-top:10px">Mobile — the same site on a phone</p>
   </div>
 </div>
