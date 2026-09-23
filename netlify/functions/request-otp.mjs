@@ -1,8 +1,8 @@
 import { getStore } from "@netlify/blobs";
 import { json, orderStore, parseBody, normalizePhone } from "./_shared.mjs";
 
-const OTP_TTL_MS = 10 * 60 * 1000;
-const MAX_ATTEMPTS = 3;
+const OTP_TTL_MS = 5 * 60 * 1000;
+const MAX_ATTEMPTS = 10;
 
 const otpStore = (context) =>
   getStore({ name: "miniature-works-otps", context });
