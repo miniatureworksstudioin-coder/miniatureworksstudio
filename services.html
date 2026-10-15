@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Web Development — Aakash Vinodia · Miniature Works Studio</title>
+<meta content="Custom e-commerce, landing pages, and admin dashboards built from scratch by Aakash Vinodia. No WordPress. No templates." name="description"/>
+<link href="https://miniatureworksstudio.com/services.html" rel="canonical"/>
+<meta content="#211C15" name="theme-color"/>
+<link href="favicon.png" rel="icon" type="image/png"/>
+<meta property="og:site_name" content="Miniature Works Studio"/>
+<meta property="og:title" content="Web Development — Aakash Vinodia"/>
+<meta property="og:description" content="Custom e-commerce, landing pages, and admin dashboards. No WordPress. No templates."/>
+<meta property="og:type" content="website"/>
+<meta property="og:url" content="https://miniatureworksstudio.com/services.html"/>
+<meta property="og:image" content="https://miniatureworksstudio.com/og-image.jpg"/>
+<meta property="og:locale" content="en_IN"/>
+<meta name="twitter:card" content="summary_large_image"/>
+<meta name="twitter:title" content="Web Development — Aakash Vinodia"/>
+<meta name="twitter:description" content="Custom e-commerce, landing pages, and admin dashboards. No WordPress. No templates."/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --paper:#ECE5D3; --paper-deep:#DFD5BB; --cream:#FAF6EC;
+  --ink:#201B14; --ink-soft:#5A5142;
+  --walnut:#211C15; --walnut-deep:#15120D;
+  --brass:#A9793F; --brass-soft:#C9A66C; --rust:#9C4A2E;
+  --blue:#3C5568; --blue-soft:#5C7B92;
+  --sage:#5B7A5B;
+  --line:rgba(32,27,20,.15); --line-dark:rgba(250,246,236,.16);
+  --serif:'Fraunces',Georgia,serif; --sans:'IBM Plex Sans',system-ui,sans-serif; --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --radius:8px; --nav-h:60px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+  background-image:
+    linear-gradient(rgba(32,27,20,.035) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(32,27,20,.035) 1px,transparent 1px);
+  background-size:28px 28px;
+}
+img{display:block;max-width:100%}
+a{color:inherit}
+.wrap{width:min(1120px,100% - 40px);margin-inline:auto}
+section{padding:64px 0;scroll-margin-top:calc(var(--nav-h) + 12px)}
+h1,h2,h3{font-family:var(--serif);font-weight:500;line-height:1.1;letter-spacing:-.01em}
+h2{font-size:clamp(26px,4.6vw,40px);margin:10px 0 16px}
+.section-intro{color:var(--ink-soft);max-width:36rem;font-size:15px}
+.eyebrow{font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--rust);font-weight:600;display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.eyebrow::before{content:"";width:26px;height:1px;background:var(--brass)}
+.why .eyebrow{color:var(--brass-soft)}
+.why .eyebrow::before{background:var(--brass-soft)}
+:focus-visible{outline:2px solid var(--blue);outline-offset:3px}
+
+.fade{opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+.fade.in{opacity:1;transform:translateY(0)}
+.hero h1 .fade{display:inline-block}
+@media (prefers-reduced-motion:reduce){
+  .fade{opacity:1;transform:none;transition:none}
+  html{scroll-behavior:auto}
+}
+
+/* ---------- NAV ---------- */
+.nav{position:fixed;inset:0 0 auto 0;height:var(--nav-h);z-index:50;display:flex;align-items:center;background:rgba(236,229,211,.88);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+.nav .wrap{display:flex;align-items:center;gap:16px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;white-space:nowrap;flex:0 0 auto}
+.brand img{width:34px;height:34px;border-radius:50%;flex:0 0 auto}
+.brand b{font-family:var(--serif);font-size:17px;font-weight:600}
+.brand span{font-family:var(--mono);font-size:11px;color:var(--ink-soft);display:none}
+.nav-actions{display:flex;align-items:center;gap:8px;flex:0 0 auto;margin-left:auto}
+.burger{width:42px;height:42px;border:1px solid var(--line);border-radius:8px;background:var(--cream);display:grid;place-items:center;cursor:pointer;padding:10px}
+.burger span{display:block;width:18px;height:2px;background:var(--ink);margin:2.5px 0;transition:.3s}
+.burger[aria-expanded="true"] span:nth-child(1){transform:translateY(4.5px) rotate(45deg)}
+.burger[aria-expanded="true"] span:nth-child(2){opacity:0}
+.burger[aria-expanded="true"] span:nth-child(3){transform:translateY(-4.5px) rotate(-45deg)}
+.menu{position:fixed;top:var(--nav-h);left:0;right:0;background:var(--paper);border-bottom:1px solid var(--line);display:none;flex-direction:column;padding:8px 20px 20px;z-index:49}
+.menu.open{display:flex}
+.menu a{text-decoration:none;padding:13px 4px;font-size:15px;border-bottom:1px solid var(--line)}
+.menu a:last-child{border:0}
+.menu a[aria-current="page"]{color:var(--rust)}
+
+.nav-more{position:relative}
+.nav-more-btn{background:none;border:0;font:inherit;font-size:15px;color:inherit;cursor:pointer;padding:13px 4px;width:100%;text-align:left;border-bottom:1px solid var(--line)}
+.nav-more-panel{display:none;flex-direction:column}
+.nav-more.open .nav-more-panel{display:flex}
+.nav-more.open .nav-more-btn{border-bottom:0}
+
+@media(min-width:900px){
+  .brand span{display:inline}
+  .burger{display:none}
+  .menu{position:static;display:flex;flex-direction:row;gap:2px;background:none;border:0;padding:0;margin-left:auto}
+  .menu a{border:0;padding:8px 12px;font-size:13.5px;border-radius:8px;transition:background .2s;white-space:nowrap}
+  .menu a:hover{background:rgba(32,27,20,.06)}
+  .nav-more-btn{border:0;padding:8px 12px;font-size:13.5px;border-radius:8px;width:auto;text-align:center;transition:background .2s;white-space:nowrap}
+  .nav-more-btn:hover{background:rgba(32,27,20,.06)}
+  .nav-more-panel{position:absolute;top:calc(100% + 6px);right:0;background:var(--cream);border:1px solid var(--line);border-radius:10px;min-width:170px;padding:6px;box-shadow:0 14px 30px rgba(32,27,20,.14);display:none;flex-direction:column;z-index:60}
+  .nav-more.open .nav-more-panel{display:flex}
+  .nav-more-panel a{padding:9px 12px;font-size:13.5px;border-radius:6px;border:0;text-align:left}
+  .nav-more-panel a:hover{background:rgba(32,27,20,.06)}
+}
+
+/* ---------- HERO ---------- */
+.hero{padding:calc(var(--nav-h) + 48px) 0 48px}
+.hero-grid{display:grid;gap:40px}
+.kicker{font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);margin-bottom:6px;letter-spacing:.04em}
+.hero h1{font-size:clamp(36px,8.4vw,66px);margin:6px 0 20px;max-width:14ch}
+.hero h1 em{font-style:italic;color:var(--rust)}
+.lede{font-size:clamp(16px,2.2vw,18px);color:var(--ink-soft);max-width:34rem}
+.cta-row{display:flex;flex-wrap:wrap;gap:12px;margin-top:28px}
+.btn{display:inline-flex;align-items:center;gap:10px;text-decoration:none;font-weight:600;font-size:14.5px;padding:14px 26px;border-radius:999px;transition:transform .25s,box-shadow .25s,background .25s;border:0;cursor:pointer;font-family:var(--sans)}
+.btn:active{transform:scale(.97)}
+.btn-dark{background:var(--walnut);color:var(--cream)}
+.btn-dark:hover{background:var(--blue)}
+.btn-line{border:1px solid var(--ink);color:var(--ink);background:transparent}
+.btn-line:hover{background:var(--ink);color:var(--cream)}
+.hero-meta{margin-top:26px;font-size:13px;color:var(--ink-soft)}
+.frame{position:relative}
+.frame img{width:100%;aspect-ratio:4/4.7;object-fit:cover;border-radius:var(--radius);box-shadow:0 30px 60px -30px rgba(32,27,20,.5)}
+.mark{position:absolute;width:16px;height:16px;pointer-events:none;opacity:0;transform:scale(0);transition:transform .5s cubic-bezier(.34,1.56,.64,1),opacity .3s ease}
+.mark.in{opacity:1;transform:scale(1)}
+.mark.tl{top:-9px;left:-9px;border-top:2px solid var(--brass);border-left:2px solid var(--brass);transform-origin:top left}
+.mark.tr{top:-9px;right:-9px;border-top:2px solid var(--brass);border-right:2px solid var(--brass);transform-origin:top right}
+.mark.bl{bottom:-9px;left:-9px;border-bottom:2px solid var(--brass);border-left:2px solid var(--brass);transform-origin:bottom left}
+.mark.br{bottom:-9px;right:-9px;border-bottom:2px solid var(--brass);border-right:2px solid var(--brass);transform-origin:bottom right}
+.spec-tag{position:absolute;left:16px;bottom:16px;background:rgba(21,18,13,.86);color:var(--cream);padding:10px 14px;border-radius:6px;backdrop-filter:blur(4px);max-width:calc(100% - 32px);opacity:0;transform:translateY(10px);transition:opacity .5s ease,transform .5s cubic-bezier(.2,.7,.2,1)}
+.spec-tag.in{opacity:1;transform:translateY(0)}
+.spec-tag .no{display:block;font-family:var(--mono);font-size:10.5px;color:var(--brass-soft);letter-spacing:.04em;margin-bottom:2px}
+.spec-tag .nm{font-size:13px;font-weight:500}
+
+.stack-card{background:var(--walnut);color:var(--cream);border-radius:var(--radius);padding:28px 26px 72px;min-height:100%;box-shadow:0 30px 60px -30px rgba(32,27,20,.5)}
+.stack-card .no{font-family:var(--mono);font-size:10.5px;color:var(--brass-soft);letter-spacing:.04em;margin-bottom:14px}
+.stack-card h3{font-size:22px;margin-bottom:18px;color:var(--cream)}
+.stack-row{display:flex;justify-content:space-between;gap:12px;padding:12px 0;border-top:1px solid var(--line-dark);font-size:13.5px}
+.stack-row .k{font-family:var(--mono);font-size:11px;color:rgba(250,246,236,.55)}
+.stack-row .v{color:var(--cream);font-weight:500;text-align:right}
+
+@media(min-width:920px){
+  .hero-grid{grid-template-columns:1.1fr .9fr;align-items:center;gap:56px}
+  .hero{padding-bottom:72px}
+}
+
+/* ---------- SERVICE CARDS ---------- */
+.svc-grid{display:grid;gap:16px;margin-top:32px}
+.svc-card{background:var(--cream);border:1px solid var(--line);border-radius:var(--radius);padding:24px 22px 22px;position:relative;transition:transform .25s,box-shadow .25s}
+.svc-card::before{content:"";position:absolute;top:-1px;left:0;width:22px;height:2px;background:var(--brass)}
+.svc-card:hover{transform:translateY(-3px);box-shadow:0 18px 36px -24px rgba(32,27,20,.45)}
+.svc-card .svc-no{font-family:var(--mono);font-size:12px;color:var(--blue);letter-spacing:.03em;display:block;margin-bottom:12px}
+.svc-card h3{font-size:20px;margin-bottom:8px}
+.svc-card p{font-size:14.5px;color:var(--ink-soft)}
+.svc-price{display:block;margin-top:16px;padding-top:14px;border-top:1px solid var(--line);font-family:var(--mono);font-size:13px;font-weight:600;color:var(--ink)}
+@media(min-width:720px){.svc-grid{grid-template-columns:repeat(2,1fr);gap:20px}}
+
+/* ---------- WHY ---------- */
+.why{background:var(--walnut);color:var(--cream)}
+.why .section-intro{color:rgba(250,246,236,.72)}
+.why h2{color:var(--cream)}
+.why-grid{display:grid;gap:22px;margin-top:32px}
+.why-item{padding:4px 0 4px 0}
+.why-icon{width:40px;height:40px;border:1px solid var(--line-dark);border-radius:8px;display:grid;place-items:center;margin-bottom:14px;background:rgba(250,246,236,.04)}
+.why-icon svg{width:20px;height:20px;stroke:var(--brass-soft);fill:none;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+.why-item h3{font-size:17px;margin-bottom:6px;color:var(--cream)}
+.why-item p{font-size:14px;color:rgba(250,246,236,.72);max-width:28rem}
+@media(min-width:820px){.why-grid{grid-template-columns:repeat(2,1fr);gap:28px 36px}}
+@media(min-width:1100px){.why-grid{grid-template-columns:repeat(4,1fr)}}
+
+/* ---------- LIVE WORK ---------- */
+.live{background:var(--paper-deep)}
+.live-card{margin-top:28px;display:grid;gap:0;background:var(--cream);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden}
+.live-visual{position:relative;background:var(--walnut);min-height:240px}
+.live-visual img{width:100%;height:100%;object-fit:cover;aspect-ratio:16/10}
+.live-body{padding:26px 24px 28px}
+.live-body h3{font-size:24px;margin-bottom:10px}
+.live-body p{font-size:14.5px;color:var(--ink-soft);max-width:36rem}
+.live-chips{display:flex;flex-wrap:wrap;gap:8px;margin:16px 0 22px}
+.chip{font-family:var(--mono);font-size:11px;border:1px solid var(--line);border-radius:99px;padding:6px 12px;color:var(--ink-soft);background:var(--paper)}
+@media(min-width:860px){
+  .live-card{grid-template-columns:1.05fr .95fr;align-items:stretch}
+  .live-visual img{aspect-ratio:auto;height:100%}
+  .live-body{padding:36px 36px 36px 32px;display:flex;flex-direction:column;justify-content:center}
+}
+
+/* ---------- CONTACT ---------- */
+.contact-grid{display:grid;gap:32px}
+.contact-list{border-top:1px solid var(--line)}
+.c-row{display:flex;align-items:center;gap:16px;text-decoration:none;padding:16px 2px;border-bottom:1px solid var(--line);transition:padding-left .25s,color .25s}
+a.c-row:hover{padding-left:8px;color:var(--blue)}
+.c-row .k{width:6.5rem;flex:0 0 auto;font-family:var(--mono);font-size:11px;color:var(--ink-soft)}
+.c-row .v{font-size:15px;font-weight:500;word-break:break-word}
+.field{margin-bottom:16px}
+.field label{display:block;font-family:var(--mono);font-size:11px;letter-spacing:.02em;color:var(--ink-soft);margin-bottom:6px}
+.field input,.field textarea{width:100%;border:1px solid var(--line);border-radius:6px;background:var(--cream);color:var(--ink);font-family:var(--sans);font-size:14px;padding:10px 12px}
+.field input:focus,.field textarea:focus{outline:2px solid var(--blue);outline-offset:1px}
+.field textarea{resize:vertical;min-height:120px}
+.form-note{font-size:12.5px;color:var(--ink-soft);margin-top:12px}
+.form-status{font-size:13.5px;margin-top:14px;min-height:1.2em}
+.form-status.ok{color:var(--sage)}
+.form-status.err{color:var(--rust)}
+@media(min-width:920px){.contact-grid{grid-template-columns:1fr 1fr;gap:56px;align-items:start}}
+
+/* ---------- FOOTER ---------- */
+footer{background:var(--walnut-deep);color:rgba(250,246,236,.55);padding:26px 0;font-size:13px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:center;justify-content:space-between}
+footer a{text-decoration:none}
+footer a:hover{color:var(--cream)}
+
+.toast-wrap{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{background:var(--walnut);color:var(--cream);font-size:13px;padding:12px 20px;border-radius:99px;box-shadow:0 12px 30px rgba(0,0,0,.3);opacity:0;transform:translateY(8px);transition:opacity .3s ease,transform .3s ease}
+.toast.show{opacity:1;transform:translateY(0)}
+
+@media (prefers-reduced-motion:reduce){
+  .fade,.mark,.spec-tag,.svc-card{transform:none!important;transition:none!important;opacity:1!important}
+}
+</style>
+</head>
+<body>
+<nav class="nav" aria-label="Primary navigation">
+<div class="wrap">
+<a class="brand" href="index.html"><img src="images/miniature-works-studio-logo.webp" alt="Miniature Works Studio logo" width="36" height="36"/><b>Miniature Works Studio</b><span>Est. 2020</span></a>
+<div class="menu" id="menu" aria-label="Site links">
+<a href="index.html#work">Shop</a>
+<a href="index.html#custom">Custom Order</a>
+<a href="index.html#track">Track Order</a>
+<a href="index.html#reviews">Reviews</a>
+<a href="index.html#about">About</a>
+<a href="index.html#contact">Contact</a>
+<div class="nav-more">
+<button class="nav-more-btn" type="button" aria-haspopup="true" aria-expanded="false" id="navMoreBtn">More <span aria-hidden="true">▾</span></button>
+<div class="nav-more-panel" id="navMorePanel">
+<a href="services.html" aria-current="page">Web Development</a>
+<a href="case-study.html">Case study</a>
+<a href="index.html#favourites">Favourites</a>
+<a href="index.html#materials">Materials</a>
+<a href="index.html#process">Process</a>
+</div>
+</div>
+</div>
+<div class="nav-actions">
+<a aria-label="Shop the collection" class="cart-link" href="index.html#work" style="width:42px;height:42px;border:1px solid var(--line);border-radius:8px;background:var(--cream);display:grid;place-items:center;margin-left:8px;flex:0 0 auto;text-decoration:none">
+<svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 3h2l2.4 12.2a2 2 0 0 0 2 1.6h8.6a2 2 0 0 0 2-1.6L22 7H6"/><circle cx="9" cy="21" r="1.4" fill="currentColor" stroke="none"/><circle cx="18" cy="21" r="1.4" fill="currentColor" stroke="none"/></svg>
+</a>
+<button aria-expanded="false" aria-label="Menu" class="burger" id="burger"><span></span><span></span><span></span></button>
+</div>
+</div>
+</nav>
+
+<main>
+<header class="hero" id="top">
+<div class="wrap hero-grid">
+<div>
+<p class="kicker fade" id="heroEyebrow">WEB DEVELOPMENT · BY AAKASH VINODIA</p>
+<h1><span class="fade" id="heroLine1">Websites built</span><br/><span class="fade" id="heroLine2"><em>from scratch.</em></span></h1>
+<p class="lede fade" id="heroLede">Custom e-commerce, landing pages, and admin dashboards. No WordPress. No templates.</p>
+<div class="cta-row fade" id="heroCta">
+<a class="btn btn-dark" href="#work">See my work</a>
+<a class="btn btn-line" href="#contact">Get in touch</a>
+</div>
+<p class="hero-meta fade" id="heroMeta">Solo design &amp; development · Ghaziabad</p>
+</div>
+<div class="frame fade" id="heroImg">
+<div class="stack-card">
+<div class="no">Stack · 2026</div>
+<h3>Built the way a studio piece is built — to brief, not off a shelf.</h3>
+<div class="stack-row"><span class="k">Frontend</span><span class="v">HTML, CSS, JS</span></div>
+<div class="stack-row"><span class="k">Hosting</span><span class="v">Netlify</span></div>
+<div class="stack-row"><span class="k">Data</span><span class="v">Supabase</span></div>
+<div class="stack-row"><span class="k">CMS</span><span class="v">None. Custom.</span></div>
+</div>
+<span class="mark tl" id="markTl"></span><span class="mark tr" id="markTr"></span><span class="mark bl" id="markBl"></span><span class="mark br" id="markBr"></span>
+<div class="spec-tag" id="specTag"><span class="no">Live</span><span class="nm">miniatureworksstudio.com</span></div>
+</div>
+</div>
+</header>
+
+<section id="services">
+<div class="wrap">
+<div class="fade" data-observe>
+<p class="eyebrow">Services</p>
+<h2>What I build</h2>
+<p class="section-intro">Fixed-scope websites, written and hosted without a monthly platform tax. Prices are starting ranges — the brief decides the rest.</p>
+</div>
+<div class="svc-grid">
+<article class="svc-card fade" data-observe>
+<span class="svc-no">01</span>
+<h3>E-commerce Websites</h3>
+<p>Made-to-order catalogues, cart, checkout, and order tracking — wired to email and WhatsApp, not a generic store theme.</p>
+<span class="svc-price">₹15,000–40,000</span>
+</article>
+<article class="svc-card fade" data-observe>
+<span class="svc-no">02</span>
+<h3>Business Landing Pages</h3>
+<p>A single sharp page for a product, studio, or offer: type, layout, and a contact path that actually converts.</p>
+<span class="svc-price">₹8,000–15,000</span>
+</article>
+<article class="svc-card fade" data-observe>
+<span class="svc-no">03</span>
+<h3>Custom Forms + Admin Dashboards</h3>
+<p>Enquiry forms, order boards, and a private studio view so you can run the site without logging into five tools.</p>
+<span class="svc-price">₹10,000–25,000</span>
+</article>
+<article class="svc-card fade" data-observe>
+<span class="svc-no">04</span>
+<h3>API Integrations</h3>
+<p>Payments, OTP, email, WhatsApp, and third-party APIs hooked into the page you already have — without a rebuild.</p>
+<span class="svc-price">₹5,000–15,000</span>
+</article>
+</div>
+</div>
+</section>
+
+<section class="why" id="why">
+<div class="wrap">
+<div class="fade" data-observe>
+<p class="eyebrow">Approach</p>
+<h2>Why work with me</h2>
+<p class="section-intro">You talk to the person writing the code. The work ships as a real site, not a Figma file and a handshake.</p>
+</div>
+<div class="why-grid">
+<div class="why-item fade" data-observe>
+<div class="why-icon" aria-hidden="true">
+<svg viewBox="0 0 24 24"><path d="M8 3h8v4H8z"/><path d="M4 7h16v13H4z"/><path d="M8 11h8M8 15h5"/></svg>
+</div>
+<h3>A live project you can test</h3>
+<p>Open the store, add a piece, walk the checkout. Proof sits on the public web, not in a pitch deck.</p>
+</div>
+<div class="why-item fade" data-observe>
+<div class="why-icon" aria-hidden="true">
+<svg viewBox="0 0 24 24"><path d="M4 18V6l8-3 8 3v12l-8 3z"/><path d="M12 3v18M4 10h16"/></svg>
+</div>
+<h3>Modern serverless tech</h3>
+<p>Netlify for hosting and functions, Supabase for data. Fast to ship, simple to keep running.</p>
+</div>
+<div class="why-item fade" data-observe>
+<div class="why-icon" aria-hidden="true">
+<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/><path d="M4 4l2.5 2.5M20 4l-2.5 2.5"/></svg>
+</div>
+<h3>No monthly hosting bills</h3>
+<p>No WordPress, no Shopify tax, no plugin stack. The site lives on a plan that stays essentially free at studio scale.</p>
+</div>
+<div class="why-item fade" data-observe>
+<div class="why-icon" aria-hidden="true">
+<svg viewBox="0 0 24 24"><path d="M4 18V8a2 2 0 0 1 2-2h7l5 5v7a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2z"/><path d="M13 6v5h5"/><path d="M8 13h6M8 16h4"/></svg>
+</div>
+<h3>Direct developer communication</h3>
+<p>One person for design, build, and follow-up. WhatsApp and email go to me, not a project manager.</p>
+</div>
+</div>
+</div>
+</section>
+
+<section class="live" id="work">
+<div class="wrap">
+<div class="fade" data-observe>
+<p class="eyebrow">Live work</p>
+<h2>Miniature Works Studio</h2>
+<p class="section-intro">The shop, cart, custom orders, tracking, and studio dashboard — designed and built end to end for this studio.</p>
+</div>
+<div class="live-card fade" data-observe>
+<div class="live-visual">
+<img alt="Handcrafted miniature work from Miniature Works Studio" src="images/double-hand-mirrors-handcrafted-pair.webp"/>
+</div>
+<div class="live-body">
+<p class="kicker" style="margin-bottom:8px">Case in point</p>
+<h3>A working storefront, not a template.</h3>
+<p>Made-to-order products, size-based pricing, Netlify forms, Supabase orders, and an admin view — the same stack I use for client work.</p>
+<div class="live-chips">
+<span class="chip">E-commerce</span>
+<span class="chip">Admin dashboard</span>
+<span class="chip">Netlify + Supabase</span>
+</div>
+<div class="cta-row" style="margin-top:0">
+<a class="btn btn-dark" href="https://miniatureworksstudio.com/" rel="noopener">Visit the live site</a>
+<a class="btn btn-line" href="case-study.html">Read the case study</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<section id="contact">
+<div class="wrap contact-grid">
+<div class="fade" data-observe>
+<p class="eyebrow">Contact</p>
+<h2>Tell me what you need built.</h2>
+<p class="section-intro">Name the kind of site, the deadline, and a link if you have one. I’ll reply with scope and a number.</p>
+<form id="webForm" name="web-inquiries" method="POST" data-netlify="true" netlify-honeypot="bot-field" style="margin-top:26px">
+<input type="hidden" name="form-name" value="web-inquiries"/>
+<p style="display:none"><label>Don’t fill this <input name="bot-field"/></label></p>
+<div class="field"><label for="wName">Name</label><input id="wName" name="name" type="text" autocomplete="name" required/></div>
+<div class="field"><label for="wEmail">Email</label><input id="wEmail" name="email" type="email" autocomplete="email" required/></div>
+<div class="field"><label for="wMessage">Message</label><textarea id="wMessage" name="message" rows="5" required placeholder="What you need, by when, and any reference sites."></textarea></div>
+<button class="btn btn-dark" type="submit" id="wSubmit">Send message</button>
+<p class="form-status" id="wStatus" role="status"></p>
+</form>
+</div>
+<div class="fade" data-observe>
+<p class="section-intro" style="margin-bottom:18px">Prefer not to use the form? Email or WhatsApp work just as well.</p>
+<div class="contact-list">
+<a class="c-row" href="mailto:miniatureworksstudio.in@gmail.com"><span class="k">Email</span><span class="v">miniatureworksstudio.in@gmail.com</span></a>
+<a class="c-row" href="https://wa.me/919258599238" rel="noopener" target="_blank"><span class="k">WhatsApp</span><span class="v">+91 92585 99238</span></a>
+<a class="c-row" href="tel:+919258599238"><span class="k">Phone</span><span class="v">+91 92585 99238</span></a>
+<div class="c-row"><span class="k">Location</span><span class="v">Ghaziabad, Uttar Pradesh</span></div>
+</div>
+</div>
+</div>
+</section>
+</main>
+
+<footer>
+<div class="wrap">
+<span>Miniature Works Studio, Ghaziabad</span>
+<a href="index.html">Back to the studio</a>
+<span id="year">© 2026</span>
+</div>
+</footer>
+
+<div aria-live="polite" class="toast-wrap" id="toastWrap"></div>
+
+<script>
+(function(){
+  "use strict";
+
+  var burger=document.getElementById('burger'),menu=document.getElementById('menu');
+  burger.addEventListener('click',function(){
+    var open=menu.classList.toggle('open');
+    burger.setAttribute('aria-expanded',open);
+  });
+  menu.querySelectorAll('a').forEach(function(a){
+    a.addEventListener('click',function(){
+      menu.classList.remove('open');
+      burger.setAttribute('aria-expanded','false');
+    });
+  });
+
+  document.getElementById('year').textContent='© '+new Date().getFullYear();
+
+  (function(){
+    var more=document.querySelector('.nav-more');
+    var btn=document.getElementById('navMoreBtn');
+    if(!more||!btn) return;
+    btn.addEventListener('click',function(e){
+      e.stopPropagation();
+      var open=more.classList.toggle('open');
+      btn.setAttribute('aria-expanded',open?'true':'false');
+    });
+    document.addEventListener('click',function(){
+      if(more.classList.contains('open')){
+        more.classList.remove('open');
+        btn.setAttribute('aria-expanded','false');
+      }
+    });
+    document.addEventListener('keydown',function(e){
+      if(e.key==='Escape' && more.classList.contains('open')){
+        more.classList.remove('open');
+        btn.setAttribute('aria-expanded','false');
+      }
+    });
+  })();
+
+  (function(){
+    var order=[
+      ['heroEyebrow',0],['heroLine1',120],['heroLine2',260],
+      ['heroImg',320],['heroLede',480],['heroCta',580],['heroMeta',660],
+      ['markTl',780],['markTr',840],['markBl',880],['markBr',920],
+      ['specTag',1000]
+    ];
+    if(window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+      order.forEach(function(s){var el=document.getElementById(s[0]);if(el)el.classList.add('in');});
+      return;
+    }
+    requestAnimationFrame(function(){
+      order.forEach(function(s){
+        setTimeout(function(){var el=document.getElementById(s[0]);if(el)el.classList.add('in');},s[1]);
+      });
+    });
+  })();
+
+  var io=('IntersectionObserver' in window)?new IntersectionObserver(function(es){
+    es.forEach(function(e){if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target);}});
+  },{threshold:.1,rootMargin:'0px 0px -6% 0px'}):null;
+  document.querySelectorAll('[data-observe]').forEach(function(el){io?io.observe(el):el.classList.add('in');});
+
+  function toast(msg){
+    var wrap=document.getElementById('toastWrap');
+    var el=document.createElement('div');
+    el.className='toast';
+    el.textContent=msg;
+    wrap.appendChild(el);
+    requestAnimationFrame(function(){el.classList.add('show');});
+    setTimeout(function(){el.classList.remove('show');setTimeout(function(){el.remove();},350);},3200);
+  }
+
+  var form=document.getElementById('webForm');
+  var statusEl=document.getElementById('wStatus');
+  var submitBtn=document.getElementById('wSubmit');
+  form.addEventListener('submit',function(e){
+    e.preventDefault();
+    statusEl.className='form-status';
+    statusEl.textContent='';
+    submitBtn.disabled=true;
+    var data=new URLSearchParams(new FormData(form));
+    fetch('/',{
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:data.toString()
+    }).then(function(res){
+      if(!res.ok) throw new Error('Could not send');
+      form.reset();
+      statusEl.className='form-status ok';
+      statusEl.textContent='Sent. I’ll reply by email.';
+      toast('Message sent');
+    }).catch(function(){
+      statusEl.className='form-status err';
+      statusEl.textContent='The form could not be sent. Email or WhatsApp instead.';
+    }).finally(function(){
+      submitBtn.disabled=false;
+    });
+  });
+})();
+</script>
+</body>
+</html>
