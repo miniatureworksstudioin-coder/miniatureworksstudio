@@ -173,23 +173,31 @@ export const handler = async (event) => {
 
     const html = buildEmailHtml({ orderId, status, customerName, orderSummary });
 
-    const response = await fetch('https://api.resend.com/emails', {
+    const response = await fetch('https://api.brevo.com/v3/smtp/email', {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
+        'api-key': process.env.BREVO_API_KEY,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Miniature Works Studio <contact@miniatureworksstudio.com>',
-        to: customerEmail,
+        sender: {
+          name: 'Miniature Works Studio',
+          email: 'contact@miniatureworksstudio.com',
+        },
+        to: [
+          {
+            email: customerEmail,
+            name: customerName || 'Customer',
+          },
+        ],
         subject: msg.subject,
-        html,
+        htmlContent: html,
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Resend API error:', response.status, errorText);
+      console.error('Brevo API error:', response.status, errorText);
       return {
         statusCode: 500,
         headers: jsonHeaders,
