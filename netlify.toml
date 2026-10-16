@@ -47,6 +47,11 @@
   to = "/.netlify/functions/verify-otp"
   status = 200
 
+[[redirects]]
+  from = "/api/notify-status"
+  to = "/.netlify/functions/notify-status"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]
