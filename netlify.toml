@@ -52,6 +52,11 @@
   to = "/.netlify/functions/notify-status"
   status = 200
 
+[[redirects]]
+  from = "/api/notify-cancellation"
+  to = "/.netlify/functions/notify-cancellation"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]

@@ -1681,9 +1681,44 @@ async function cancelOrder(orderId){
     try{ result = await response.json(); }catch(e){}
     if(!response.ok) throw new Error(result.error || "Could not cancel this order.");
     try{ await submitCancellationToNetlify(orderId, phone); }catch(e){}
-    toast("Order cancelled. The studio has been notified.");
+
+    // NEW — Send cancellation confirmation email to customer
+    try{
+      var orderData = await fetchOrderForCancel(orderId, phone);
+      if(orderData && orderData.email){
+        await fetch("/api/notify-cancellation", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            orderId: orderId,
+            customerEmail: orderData.email,
+            customerName: orderData.name || "Customer",
+            reason: ""
+          })
+        });
+      }
+    }catch(err){ console.error("Cancellation email failed:", err); }
+
+    toast("Order cancelled. A confirmation email has been sent.");
     trackOrder();
   }catch(e){ toast(e.message || "Could not cancel — please try again."); }
+}
+
+// Helper: fetch the order so we can get the customer's email
+async function fetchOrderForCancel(orderId, phone){
+  try{
+    var res = await fetch("/api/order-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ orderId: orderId, phone: phone })
+    });
+    if(!res.ok) return null;
+    var data = await res.json();
+    return data.order || data || null;
+  }catch(e){
+    console.error("fetchOrderForCancel failed:", e);
+    return null;
+  }
 }
 async function trackOrder(){
   var raw = val("trackInput").toUpperCase(), phone = normPhone(val("trackPhone"));
