@@ -1,6 +1,4 @@
-// netlify/functions/notify-status.js
-// Sends an automatic status-update email to the customer via Resend.
-// This function ONLY sends an email — no database writes, no other logic.
+// netlify/functions/notify-status.mjs
 
 const STATUS_MESSAGES = {
   received: {
@@ -80,15 +78,15 @@ function buildEmailHtml({ orderId, status, customerName, orderSummary }) {
           <tr>
             <td style="padding-bottom:24px; border-bottom:1px solid #DFD5BB;">
               <div style="font-size:22px; font-weight:bold; color:#201B14;">Miniature Works Studio</div>
-              <div style="font-size:13px; color:#201B14; opacity:0.7; margin-top:4px;">Est. 2020 &middot; Ghaziabad</div>
+              <div style="font-size:13px; color:#201B14; margin-top:4px;">Est. 2020 &middot; Ghaziabad</div>
             </td>
           </tr>
 
           <!-- Body -->
           <tr>
             <td style="padding:28px 0 8px 0;">
-              <h1 style="margin:0 0 16px 0; font-size:20px; color:#201B14;">${escapeHtml(msg.heading)}</h1>
               <p style="margin:0 0 12px 0; font-size:15px; line-height:1.6; color:#201B14;">Hi ${name},</p>
+              <h1 style="margin:0 0 12px 0; font-size:20px; color:#201B14;">${escapeHtml(msg.heading)}</h1>
               <p style="margin:0 0 20px 0; font-size:15px; line-height:1.6; color:#201B14;">${escapeHtml(msg.body)}</p>
             </td>
           </tr>
@@ -99,18 +97,17 @@ function buildEmailHtml({ orderId, status, customerName, orderSummary }) {
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#FAF6EC; border:1px solid #DFD5BB; border-radius:8px;">
                 <tr>
                   <td style="padding:16px 20px;">
-                    <div style="font-size:12px; text-transform:uppercase; letter-spacing:0.08em; color:#201B14; opacity:0.6; margin-bottom:12px;">Order details</div>
                     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="font-size:14px; color:#201B14;">
                       <tr>
-                        <td style="padding:4px 0; width:90px; opacity:0.7;">Order ID</td>
+                        <td style="padding:4px 0; width:90px;">Order ID</td>
                         <td style="padding:4px 0; font-weight:bold;">${escapeHtml(orderId)}</td>
                       </tr>
                       <tr>
-                        <td style="padding:4px 0; opacity:0.7;">Status</td>
+                        <td style="padding:4px 0;">Status</td>
                         <td style="padding:4px 0; font-weight:bold;">${escapeHtml(STATUS_LABELS[status] || status)}</td>
                       </tr>
                       <tr>
-                        <td style="padding:4px 0; opacity:0.7; vertical-align:top;">Items</td>
+                        <td style="padding:4px 0; vertical-align:top;">Items</td>
                         <td style="padding:4px 0;">${escapeHtml(orderSummary || '—')}</td>
                       </tr>
                     </table>
@@ -130,7 +127,7 @@ function buildEmailHtml({ orderId, status, customerName, orderSummary }) {
           <!-- Footer -->
           <tr>
             <td style="padding-top:24px; border-top:1px solid #DFD5BB;">
-              <p style="margin:0; font-size:12px; color:#201B14; opacity:0.6;">Miniature Works Studio, Ghaziabad &middot; miniatureworksstudio.com</p>
+              <p style="margin:0; font-size:12px; color:#201B14;">Miniature Works Studio, Ghaziabad &middot; miniatureworksstudio.com</p>
             </td>
           </tr>
 
@@ -142,10 +139,9 @@ function buildEmailHtml({ orderId, status, customerName, orderSummary }) {
 </html>`;
 }
 
-exports.handler = async (event) => {
+export const handler = async (event) => {
   const jsonHeaders = { 'Content-Type': 'application/json' };
 
-  // Only accept POST
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
@@ -192,12 +188,12 @@ exports.handler = async (event) => {
     });
 
     if (!response.ok) {
-      const detail = await response.text();
-      console.error('Resend API error:', response.status, detail);
+      const errorText = await response.text();
+      console.error('Resend API error:', response.status, errorText);
       return {
         statusCode: 500,
         headers: jsonHeaders,
-        body: JSON.stringify({ error: 'Email failed', detail }),
+        body: JSON.stringify({ error: 'Email failed', detail: errorText }),
       };
     }
 
