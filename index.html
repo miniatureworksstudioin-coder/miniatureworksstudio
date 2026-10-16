@@ -1874,6 +1874,25 @@ function renderAdminList(orders){
         if(!response.ok) throw new Error(result.error || "Could not save status.");
         order.status = sel.value;
         toast("Status updated.");
+// Send status notification email to customer
+try{
+  if(order.email){
+    fetch("/api/notify-status", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        orderId: order.orderId,
+        status: sel.value.toLowerCase().replace(/ /g, "_"),
+        customerEmail: order.email,
+        customerName: order.name,
+        orderSummary: (order.items && order.items.length)
+          ? order.items.map(function(i){ return i.name + " (" + i.size + ") x" + i.qty; }).join(", ")
+          : "Custom: " + (order.description || "")
+      })
+    }).catch(function(err){ console.error("Notify failed:", err); });
+  }
+}catch(err){ console.error("Notify error:", err); }
+
         var pill = list.querySelector('.admin-order[data-id="'+id+'"] .status-pill');
         pill.className = "status-pill " + statusClass(order.status);
         pill.textContent = order.status;
