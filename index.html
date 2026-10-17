@@ -1747,28 +1747,20 @@ async function cancelOrder(orderId){
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify({orderId: orderId, phone: phone})
       });
-      var statusData = await statusRes.json();
-      var orderRecord = statusData.order || statusData;
-      
-      if(orderRecord && orderRecord.email){
-        await fetch("/api/notify-cancellation", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            orderId: orderId,
-            customerEmail: orderRecord.email,
-            customerName: orderRecord.name || "Customer",
-            reason: "Customer cancelled via Track Order"
-          })
-        });
-      } else {
-        console.error("Could not find email in order data:", statusData);
-      }
+ // Send confirmation email via backend (backend securely fetches the email)
+      await fetch("/api/notify-cancellation", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          orderId: orderId,
+          reason: "Customer cancelled via Track Order"
+        })
+      });
     }catch(err){ 
       console.error("Cancellation email failed:", err); 
     }
 
-    toast("Order cancelled. The studio has been notified.");
+    toast("Order cancelled. A confirmation email has been sent.");
     trackOrder();
     
   }catch(e){ 
