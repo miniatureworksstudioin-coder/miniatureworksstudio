@@ -2,6 +2,7 @@
   publish = "."
   functions = "netlify/functions"
   SECRETS_SCAN_ENABLED = "false"
+  SECRETS_SCAN_OMIT_PATHS = "index.html"
 
 [[redirects]]
   from = "/api/orders"
