@@ -185,13 +185,13 @@ export const handler = async (event) => {
       };
     }
 
-    // 1. Fetch the order to get its customer_id (using order_number, not id)
-const orders = await supabaseSelect(
-  `orders?order_number=eq.${encodeURIComponent(orderId)}&select=customer_id&limit=1`
-);
+// 1. Fetch the order and ask for all columns (select=*) just in case the email is there
+    const orders = await supabaseSelect(
+      `orders?order_number=eq.${encodeURIComponent(orderId)}&select=*&limit=1`
+    );
     const order = orders && orders.length > 0 ? orders[0] : null;
 
-    if (!order || !order.customer_id) {
+    if (!order) {
       return {
         statusCode: 404,
         headers: JSON_HEADERS,
@@ -199,26 +199,28 @@ const orders = await supabaseSelect(
       };
     }
 
-    // 2. Fetch the customer to get their email and name
-    const customers = await supabaseSelect(
-      `customers?id=eq.${encodeURIComponent(order.customer_id)}&select=email,name&limit=1`
-    );
-    const customer = customers[0];
+    let customerEmail = order.email || order.customer_email;
+    let customerName = order.name || order.customer_name;
 
-    if (!customer || !customer.email) {
+    // 2. If the order doesn't have the email, look it up by customer_id
+    if (!customerEmail && order.customer_id) {
+      const customers = await supabaseSelect(
+        `customers?id=eq.${encodeURIComponent(order.customer_id)}&select=email,name&limit=1`
+      );
+      const customer = customers && customers.length > 0 ? customers[0] : null;
+      if (customer) {
+        customerEmail = customer.email;
+        customerName = customer.name;
+      }
+    }
+
+    if (!customerEmail) {
       return {
         statusCode: 404,
         headers: JSON_HEADERS,
-        body: JSON.stringify({ error: 'Customer not found' }),
+        body: JSON.stringify({ error: 'Customer email not found for this order' }),
       };
     }
-
-    const customerEmail = customer.email;
-    const customerName = customer.name;
-
-    const customerHtml = buildCustomerEmail({ orderId, customerName, reason });
-    const studioHtml = buildStudioEmail({ orderId, customerName, customerEmail, reason });
-
     // Wait for both; failures are logged inside sendEmail and don't affect the response
     await Promise.all([
       sendEmail({
