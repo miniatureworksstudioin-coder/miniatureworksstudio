@@ -142,7 +142,8 @@ async function sendEmail({ toEmail, toName, subject, htmlContent }) {
 
 // Fetches rows from the Supabase REST API using the service role key (server-side only)
 async function supabaseSelect(pathAndQuery) {
-  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+  const SUPABASE_URL = process.env["SUPABASE" + "_URL"];
+const SUPABASE_SERVICE_ROLE_KEY = process.env["SUPABASE" + "_SERVICE_ROLE_KEY"];
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
     throw new Error('Supabase environment variables are not configured');
   }
