@@ -185,11 +185,11 @@ export const handler = async (event) => {
       };
     }
 
-    // 1. Fetch the order to get its customer_id
-    const orders = await supabaseSelect(
-      `orders?id=eq.${encodeURIComponent(orderId)}&select=id,customer_id&limit=1`
-    );
-    const order = orders[0];
+    // 1. Fetch the order to get its customer_id (using order_number, not id)
+const orders = await supabaseSelect(
+  `orders?order_number=eq.${encodeURIComponent(orderId)}&select=customer_id&limit=1`
+);
+    const order = orders && orders.length > 0 ? orders[0] : null;
 
     if (!order || !order.customer_id) {
       return {
