@@ -140,6 +140,30 @@ async function sendEmail({ toEmail, toName, subject, htmlContent }) {
   }
 }
 
+// Fetches rows from the Supabase REST API using the service role key (server-side only)
+async function supabaseSelect(pathAndQuery) {
+  const { SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY } = process.env;
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    throw new Error('Supabase environment variables are not configured');
+  }
+
+  const res = await fetch(`${SUPABASE_URL.replace(/\/+$/, '')}/rest/v1/${pathAndQuery}`, {
+    method: 'GET',
+    headers: {
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      Accept: 'application/json',
+    },
+  });
+
+  if (!res.ok) {
+    const detail = await res.text().catch(() => '');
+    throw new Error(`Supabase request failed (${res.status}): ${detail}`);
+  }
+
+  return res.json();
+}
+
 export const handler = async (event) => {
   if (event.httpMethod !== 'POST') {
     return {
@@ -150,15 +174,46 @@ export const handler = async (event) => {
   }
 
   try {
-    const { orderId, customerEmail, customerName, reason } = JSON.parse(event.body || '{}');
+    const { orderId, reason } = JSON.parse(event.body || '{}');
 
-    if (!orderId || !customerEmail) {
+    if (!orderId) {
       return {
         statusCode: 400,
         headers: JSON_HEADERS,
         body: JSON.stringify({ error: 'Missing required fields' }),
       };
     }
+
+    // 1. Fetch the order to get its customer_id
+    const orders = await supabaseSelect(
+      `orders?id=eq.${encodeURIComponent(orderId)}&select=id,customer_id&limit=1`
+    );
+    const order = orders[0];
+
+    if (!order || !order.customer_id) {
+      return {
+        statusCode: 404,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ error: 'Order not found' }),
+      };
+    }
+
+    // 2. Fetch the customer to get their email and name
+    const customers = await supabaseSelect(
+      `customers?id=eq.${encodeURIComponent(order.customer_id)}&select=email,name&limit=1`
+    );
+    const customer = customers[0];
+
+    if (!customer || !customer.email) {
+      return {
+        statusCode: 404,
+        headers: JSON_HEADERS,
+        body: JSON.stringify({ error: 'Customer not found' }),
+      };
+    }
+
+    const customerEmail = customer.email;
+    const customerName = customer.name;
 
     const customerHtml = buildCustomerEmail({ orderId, customerName, reason });
     const studioHtml = buildStudioEmail({ orderId, customerName, customerEmail, reason });
